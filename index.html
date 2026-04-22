@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Live Counter System</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background: #111;
+  color: white;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ================= TOP COLOR BAR ================= */
+#topBar {
+  position: fixed;
+  bottom: 0;
+  right: 0px;
+  width: 100%;
+  height: 10vh;
+  z-index: -3;
+  pointer-events: none;
+  transition: background 0.3s ease;
+}
+/* ================= TOP COLOR BAR ================= */
+#rightbar {
+  position: fixed;
+  bottom: 0;
+  right: 5px;
+  width: 100%;
+  height: 20vh;
+  z-index: -3;
+  pointer-events: none;
+  transition: background 0.3s ease;
+}
+/* ================= LIMIT OVERLAY ================= */
+#limitOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(183, 28, 28, 0);
+  z-index: -5;
+  pointer-events: none;
+  transition: background 0.3s ease;
+}
+
+body.limitReached #limitOverlay {
+  background: rgb(218, 0, 0);
+}
+
+/* ================= SYNC ================= */
+#syncStatus {
+  position: absolute;
+  top: 2vh;
+  left: 2vw;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: gray;
+}
+
+/* ================= LAST UPDATE ================= */
+#lastUpdate {
+  position: absolute;
+  top: 6vh;
+  left: 2vw;
+  opacity: 0.7;
+}
+
+/* ================= REFRESH ================= */
+#refreshBtn {
+  position: absolute;
+  top: 10vh;
+  left: 2vw;
+  padding: 4vh 4vw;
+  border: none;
+  border-radius: 200px;
+  background: #2196f3;
+  color: white;
+  cursor: pointer;
+}
+
+#refreshBtn:disabled {
+  opacity: 0.4;
+}
+
+/* ================= MAX ================= */
+#maxContainer {
+  position: absolute;
+  top: 2vh;
+  right: 2vw;
+  background: rgb(0,153,255);
+  border-radius: 12px;
+  padding: 1vh 1vw;
+  text-align: center;
+}
+
+#maxValue {
+  font-size: 30px;
+}
+
+#maxButtons button {
+  margin: 1px;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+}
+
+#maxPlus { background: #4caf50; }
+#maxMinus { background: #f44336; }
+
+/* ================= COUNTER ================= */
+#count {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 70vh;
+  font-size: clamp(150px, 100vmin, 200px);
+}
+
+/* ================= BUTTONS ================= */
+#buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+button {
+  font-size: 40px;
+  padding: 10px 60px;
+  border: none;
+  border-radius: 20px;
+  color: white;
+  cursor: pointer;
+}
+
+#plus { background: #4caf50; }
+#minus { background: #f44336; }
+
+/* ================= COLORS ================= */
+#colorPicker {
+  position: fixed;
+  bottom: 1vh;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 12px;
+}
+
+.colorDot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid white;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.colorDot.active {
+  transform: scale(1.25);
+  box-shadow: 0 0 10px white;
+}
+
+/* ================= LOG (RIGHT NEXT TO NUMBER) ================= */
+#log {
+  position: absolute;
+  top: 30%;
+  right: 10vw;
+  transform: translateY();
+  width: 40px;
+  font-size: 20px;
+}
+
+.logEntry {
+  display: flex;
+  align-items: center;
+  gap: 0px;
+  margin-bottom: 6px;
+}
+
+.colorBubble {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+}
+</style>
+</head>
+
+<body>
+
+<div id="topBar"></div>
+<div id="limitOverlay"></div>
+
+<!-- SYNC -->
+<div id="syncStatus">
+  <div id="dot"></div>
+  <span id="syncText">connecting...</span>
+</div>
+
+<div id="lastUpdate">letztes update: nie</div>
+
+<button id="refreshBtn">↻</button>
+
+<!-- MAX -->
+<div id="maxContainer">
+  <div>Max</div>
+  <div id="maxValue">10</div>
+  <div id="maxButtons">
+    <button id="maxPlus">+</button>
+    <button id="maxMinus">-</button>
+  </div>
+</div>
+
+<!-- LOG -->
+<div id="log"></div>
+
+<!-- COUNTER -->
+<div id="count">0</div>
+
+<!-- BUTTONS -->
+<div id="buttons">
+  <button id="plus">+</button>
+  <button id="minus">-</button>
+</div>
+
+<!-- COLORS -->
+<div id="colorPicker">
+  <div class="colorDot" data-color="#4fc42b" style="background:#4fc42b"></div>
+  <div class="colorDot" data-color="#ff3939" style="background:#ff3939"></div>
+  <div class="colorDot" data-color="#1a91f3" style="background:#1a91f3"></div>
+  <div class="colorDot" data-color="#ffff00" style="background:#ffff00"></div>
+  <div class="colorDot" data-color="#8c00ff" style="background:#8c00ff"></div>
+  <div class="colorDot" data-color="#ff00ff" style="background:#ff00ff"></div>
+</div>
+
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+/* ================= SUPABASE ================= */
+const supabase = createClient(
+  "https://ollmmbnptcpktgtltzzz.supabase.co",
+  "sb_publishable_7E3Ai7_08sGkXhwhm85USw_Ikf5taX1"
+);
+
+/* ================= STATE ================= */
+let count = 0;
+let maxValue = 10;
+let localColor = localStorage.getItem("color") || "#111";
+let lastEventTime = Date.now();
+
+/* ================= COLOR BAR ================= */
+const topBar = document.getElementById("topBar");
+
+function applyColor(c) {
+  topBar.style.background = c;
+}
+
+/* ================= COLOR PICKER ================= */
+const dots = document.querySelectorAll(".colorDot");
+
+function setActive(c) {
+  dots.forEach(d => d.classList.toggle("active", d.dataset.color === c));
+}
+
+applyColor(localColor);
+setActive(localColor);
+
+dots.forEach(d => {
+  d.onclick = () => {
+    localColor = d.dataset.color;
+    localStorage.setItem("color", localColor);
+    applyColor(localColor);
+    setActive(localColor);
+  };
+});
+
+/* ================= LIMIT ================= */
+function checkLimit() {
+  document.body.classList.toggle("limitReached", count >= maxValue);
+}
+
+/* ================= LOG ================= */
+function addLog(delta, color) {
+  const log = document.getElementById("log");
+
+  const row = document.createElement("div");
+  row.className = "logEntry";
+
+  const bubble = document.createElement("div");
+  bubble.className = "colorBubble";
+  bubble.style.background = color || "#fff";
+
+  const text = document.createElement("span");
+  text.textContent = `${delta > 0 ? "+" : ""}${delta}`;
+
+  row.appendChild(bubble);
+  row.appendChild(text);
+
+  log.prepend(row);
+
+  if (log.children.length > 10) {
+    log.removeChild(log.lastChild);
+  }
+}
+
+/* ================= SYNC ================= */
+function setSync(state) {
+  const dot = document.getElementById("dot");
+  const text = document.getElementById("syncText");
+
+  if (state === "online") {
+    dot.style.background = "#4CAF50";
+    text.textContent = "online";
+  } else if (state === "offline") {
+    dot.style.background = "#f44336";
+    text.textContent = "offline";
+  } else {
+    dot.style.background = "gray";
+    text.textContent = "connecting...";
+  }
+}
+
+/* ================= LOAD ================= */
+async function load() {
+  const { data } = await supabase
+    .from("counter")
+    .select("*")
+    .eq("id", 1)
+    .single();
+
+  count = data.value;
+  maxValue = data.max_value ?? 10;
+
+  document.getElementById("count").innerText = count;
+  document.getElementById("maxValue").innerText = maxValue;
+
+  checkLimit();
+}
+
+/* ================= UPDATE ================= */
+async function update(delta) {
+
+  const { data } = await supabase
+    .from("counter")
+    .select("value")
+    .eq("id", 1)
+    .single();
+
+  await supabase
+    .from("counter")
+    .update({
+      value: data.value + delta,
+      last_delta: delta,
+      last_color: localColor
+    })
+    .eq("id", 1);
+}
+
+/* ================= MAX (FIXED) ================= */
+async function updateMax(delta) {
+
+  const { data } = await supabase
+    .from("counter")
+    .select("max_value")
+    .eq("id", 1)
+    .single();
+
+  let newMax = (data.max_value ?? 10) + delta;
+  if (newMax < 0) newMax = 0;
+
+  await supabase
+    .from("counter")
+    .update({ max_value: newMax })
+    .eq("id", 1);
+
+  maxValue = newMax;
+  document.getElementById("maxValue").innerText = maxValue;
+
+  checkLimit();
+}
+
+/* ================= BUTTONS ================= */
+document.getElementById("plus").onclick = () => update(1);
+document.getElementById("minus").onclick = () => update(-1);
+
+document.getElementById("maxPlus").onclick = () => updateMax(1);
+document.getElementById("maxMinus").onclick = () => updateMax(-1);
+
+/* ================= REALTIME ================= */
+supabase.channel("counter-live")
+  .on("postgres_changes", { event: "*", schema: "public", table: "counter" }, payload => {
+
+    lastEventTime = Date.now();
+    setSync("online");
+
+    const d = payload.new;
+
+    count = d.value;
+    maxValue = d.max_value ?? 10;
+
+    document.getElementById("count").innerText = count;
+    document.getElementById("maxValue").innerText = maxValue;
+
+    checkLimit();
+
+    if (d.last_delta !== null && d.last_delta !== 0) {
+      addLog(d.last_delta, d.last_color);
+    }
+  })
+  .subscribe((status) => {
+
+    if (status === "SUBSCRIBED") setSync("online");
+    else if (status === "CLOSED" || status === "TIMED_OUT") setSync("offline");
+    else setSync("connecting");
+  });
+
+/* ================= HEARTBEAT ================= */
+setInterval(() => {
+  if (Date.now() - lastEventTime > 8000) {
+    setSync("offline");
+  }
+}, 2000);
+
+load();
+applyColor(localColor);
+</script>
+
+</body>
+</html>
