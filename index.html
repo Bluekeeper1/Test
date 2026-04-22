@@ -96,6 +96,7 @@ body.limitReached #limitOverlay {
   opacity: 0.4;
 }
 
+
 /* ================= MAX ================= */
 #maxContainer {
   position: absolute;
@@ -201,6 +202,7 @@ button {
 </head>
 
 <body>
+  <audio id="counterSound" src="click.mp3" preload="auto"></audio>
 
 <div id="topBar"></div>
 <div id="limitOverlay"></div>
@@ -248,7 +250,9 @@ button {
 </div>
 
 <script type="module">
+  
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
 
 /* ================= SUPABASE ================= */
 const supabase = createClient(
@@ -261,6 +265,41 @@ let count = 0;
 let maxValue = 10;
 let localColor = localStorage.getItem("color") || "#111";
 let lastEventTime = Date.now();
+
+let audio = document.getElementById("counterSound");
+
+let soundUnlocked = false;
+let soundTimer = null;
+let lastSoundEvent = 0;
+
+/* ================= UNLOCK ================= */
+document.addEventListener("click", () => {
+  if (soundUnlocked) return;
+
+  audio.play()
+    .then(() => {
+      audio.pause();
+      audio.currentTime = 0;
+      soundUnlocked = true;
+    })
+    .catch(() => {});
+}, { once: true });
+
+
+/* ================= SOUND TRIGGER ================= */
+function triggerSound() {
+  if (!soundUnlocked || !audio) return;
+
+  lastSoundEvent = Date.now();
+  clearTimeout(soundTimer);
+
+  soundTimer = setTimeout(() => {
+    if (Date.now() - lastSoundEvent >= 2000) {
+      audio.currentTime = 0;
+      audio.play().catch(() => {});
+    }
+  }, 2000);
+}
 
 /* ================= COLOR BAR ================= */
 const topBar = document.getElementById("topBar");
@@ -293,6 +332,7 @@ function checkLimit() {
   document.body.classList.toggle("limitReached", count >= maxValue);
 }
 
+
 /* ================= LOG ================= */
 function addLog(delta, color) {
   const log = document.getElementById("log");
@@ -317,6 +357,7 @@ function addLog(delta, color) {
   }
 }
 
+
 /* ================= SYNC ================= */
 function setSync(state) {
   const dot = document.getElementById("dot");
@@ -330,7 +371,7 @@ function setSync(state) {
     text.textContent = "offline";
   } else {
     dot.style.background = "gray";
-    text.textContent = "connecting...";
+    text.textContent = "Verbinde...";
   }
 }
 
@@ -352,6 +393,7 @@ async function load() {
 }
 
 /* ================= UPDATE ================= */
+
 async function update(delta) {
 
   const { data } = await supabase
@@ -390,7 +432,7 @@ async function updateMax(delta) {
   maxValue = newMax;
   document.getElementById("maxValue").innerText = maxValue;
 
-  checkLimit();
+  checkLimit();  
 }
 
 /* ================= BUTTONS ================= */
@@ -420,6 +462,8 @@ supabase.channel("counter-live")
     if (d.last_delta !== null && d.last_delta !== 0) {
       addLog(d.last_delta, d.last_color);
     }
+
+triggerSound();
   })
   .subscribe((status) => {
 
@@ -427,13 +471,45 @@ supabase.channel("counter-live")
     else if (status === "CLOSED" || status === "TIMED_OUT") setSync("offline");
     else setSync("connecting");
   });
+document.getElementById("refreshBtn").onclick = async () => {
+  setSync("connecting"); // optional visuelles Feedback
 
+  await load(); // lädt Counter + Max neu aus Supabase
+
+  lastEventTime = Date.now();
+
+  setSync("online");
+
+  // Button kurz deaktivieren (optional, aber sinnvoll)
+ const btn = document.getElementById("refreshBtn");
+
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.disabled = false;
+  }, 5000);
+};
+function updateLastUpdateDisplay() {
+  const el = document.getElementById("lastUpdate");
+
+  const diff = Math.floor((Date.now() - lastEventTime) / 1000);
+
+  if (diff < 5) {
+    el.innerText = "letztes update: gerade eben";
+  } else if (diff < 60) {
+    el.innerText = `letztes update: vor ${diff} sek`;
+  } else {
+    const min = Math.floor(diff / 60);
+    el.innerText = `letztes update: vor ${min} min`;
+  }
+}
+setInterval(updateLastUpdateDisplay, 1000);
 /* ================= HEARTBEAT ================= */
 setInterval(() => {
   if (Date.now() - lastEventTime > 8000) {
     setSync("offline");
   }
 }, 2000);
+
 
 load();
 applyColor(localColor);
