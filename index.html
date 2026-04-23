@@ -200,7 +200,7 @@ button {
 
 #log {
   width: 90%;
-  height: 90%;
+  height: 85%;
 
   display: flex;
   flex-direction: column;
@@ -208,12 +208,12 @@ button {
   justify-content: flex-start; /* 👈 START OBEN */
   align-items: flex-start;
 
-  gap: 6px;
+  gap: 10px;
 
   overflow-y: auto; /* falls zu viele Logs */
   overflow-x: hidden;
 
-  padding-top: 10px;
+  padding-top: 0px;
 }
 .logEntry {
   display: flex;
@@ -221,7 +221,7 @@ button {
   align-items: center;   /* 👈 DAS ist der entscheidende Fix */
 
   justify-content: center;
-  gap: 8px;
+  gap: 0px;
 
   white-space: nowrap;
 }
@@ -231,8 +231,8 @@ button {
   top: 20vh;
   right: 2vw;          /* stabil statt left:85% */
   
-  width: 110px;        /* feste, saubere Größe */
-  height: 50vh;
+  width: 100px;        /* feste, saubere Größe */
+  height: 42vh;
 
   border-radius: 40px;
 
