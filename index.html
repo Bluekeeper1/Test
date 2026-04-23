@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Live Counter System</title>
+<title>Restaurant </title>
 
 <style>
 body {
@@ -196,41 +196,56 @@ button {
 }
 
 /* ================= LOG (RIGHT NEXT TO NUMBER) ================= */
-#log {
-  position: absolute;
-  top: 5%;
-  right: 2vw;
-  transform: translateY();
-  width: 80px;
-  font-size: 20px;
-}
 
+
+#log {
+  width: 90%;
+  height: 90%;
+
+  display: flex;
+  flex-direction: column;
+
+  justify-content: flex-start; /* 👈 START OBEN */
+  align-items: flex-start;
+
+  gap: 6px;
+
+  overflow-y: auto; /* falls zu viele Logs */
+  overflow-x: hidden;
+
+  padding-top: 10px;
+}
 .logEntry {
   display: flex;
-  align-items: center;
-  gap: 0px;
-  margin-bottom: 6px;
-  white-space: nowrap; /* 🔥 verhindert Umbruch */
+  flex-direction: row;
+  align-items: center;   /* 👈 DAS ist der entscheidende Fix */
 
+  justify-content: center;
+  gap: 8px;
+
+  white-space: nowrap;
 }
-#logContainer {
-  position: absolute;
-  top: 20vh;
-  left: 90%;
-  transform: translateX(-50%);
 
-  padding: 200px 50px;
+#logContainer {
+  position: fixed;
+  top: 20vh;
+  right: 2vw;          /* stabil statt left:85% */
+  
+  width: 110px;        /* feste, saubere Größe */
+  height: 50vh;
 
   border-radius: 40px;
 
-  /* GLASS LOOK */
   background: rgba(0, 0, 0, 0.92);
   backdrop-filter: blur(15px);
 
-  /* GLOW */
   box-shadow: 0 0 25px rgba(0, 150, 255, 0.4);
 
-  z-index: -5;
+  z-index: 5;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 
@@ -392,6 +407,7 @@ function addLog(delta, color) {
 
   const row = document.createElement("div");
   row.className = "logEntry";
+  
 
   const bubble = document.createElement("div");
   bubble.className = "colorBubble";
