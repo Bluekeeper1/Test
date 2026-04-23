@@ -137,16 +137,35 @@ body.limitReached #limitOverlay {
 #buttons {
   display: flex;
   justify-content: center;
-  gap: 20px;
+  gap: 100px;
 }
 
 button {
-  font-size: 40px;
-  padding: 10px 60px;
+  font-size: 60px;
+  padding: 20px 90px;
   border: none;
-  border-radius: 20px;
+  border-radius: 60px;
   color: white;
   cursor: pointer;
+}
+#buttonContainer {
+  position: absolute;
+  top: 69vh;
+  left: 50%;
+  transform: translateX(-50%);
+
+  padding: 64px 270px;
+
+  border-radius: 40px;
+
+  /* GLASS LOOK */
+  background: rgba(0, 0, 0, 0.92);
+  backdrop-filter: blur(15px);
+
+  /* GLOW */
+  box-shadow: 0 0 25px rgba(0, 150, 255, 0.4);
+
+  z-index: -1;
 }
 
 #plus { background: #4caf50; }
@@ -179,10 +198,10 @@ button {
 /* ================= LOG (RIGHT NEXT TO NUMBER) ================= */
 #log {
   position: absolute;
-  top: 30%;
-  right: 10vw;
+  top: 5%;
+  right: 2vw;
   transform: translateY();
-  width: 40px;
+  width: 80px;
   font-size: 20px;
 }
 
@@ -191,12 +210,38 @@ button {
   align-items: center;
   gap: 0px;
   margin-bottom: 6px;
+  white-space: nowrap; /* 🔥 verhindert Umbruch */
+
+}
+#logContainer {
+  position: absolute;
+  top: 20vh;
+  left: 90%;
+  transform: translateX(-50%);
+
+  padding: 200px 50px;
+
+  border-radius: 40px;
+
+  /* GLASS LOOK */
+  background: rgba(0, 0, 0, 0.92);
+  backdrop-filter: blur(15px);
+
+  /* GLOW */
+  box-shadow: 0 0 25px rgba(0, 150, 255, 0.4);
+
+  z-index: -5;
 }
 
-.colorBubble {
+
+  .colorBubble {
   width: 20px;
   height: 20px;
   border-radius: 50%;
+
+  flex-shrink: 0;   /* 🔥 verhindert Zusammendrücken */
+  aspect-ratio: 1 / 1; /* extra Sicherheit für perfekte Rundheit */
+}
 }
 </style>
 </head>
@@ -228,7 +273,9 @@ button {
 </div>
 
 <!-- LOG -->
-<div id="log"></div>
+<div id="logContainer">
+  <div id="log"></div>
+</div>
 
 <!-- COUNTER -->
 <div id="count">0</div>
@@ -237,6 +284,12 @@ button {
 <div id="buttons">
   <button id="plus">+</button>
   <button id="minus">-</button>
+</div>
+
+<div id="buttonContainer">
+  <div id="buttons">
+    
+  </div>
 </div>
 
 <!-- COLORS -->
@@ -342,10 +395,20 @@ function addLog(delta, color) {
 
   const bubble = document.createElement("div");
   bubble.className = "colorBubble";
+
+  // ✅ Bubble bleibt wie vorher (z.B. vom ColorPicker)
   bubble.style.background = color || "#fff";
 
   const text = document.createElement("span");
-  text.textContent = `${delta > 0 ? "+" : ""}${delta}`;
+
+  // ⬇️ Zeit speichern
+  const timestamp = Date.now();
+  text.dataset.time = timestamp;
+
+  // ✅ Textfarbe je nach Wert
+  text.style.color = delta > 0 ? "#4caf50" : "#f44336";
+
+  text.textContent = `${delta > 0 ? "+" : ""}${delta} (0s)`;
 
   row.appendChild(bubble);
   row.appendChild(text);
@@ -356,6 +419,19 @@ function addLog(delta, color) {
     log.removeChild(log.lastChild);
   }
 }
+// ⬇️ live update
+setInterval(() => {
+  const entries = document.querySelectorAll("#log span");
+
+  entries.forEach(el => {
+    const time = parseInt(el.dataset.time);
+    const diff = Math.floor((Date.now() - time) / 1000);
+
+    const value = el.textContent.split(" ")[0]; // +1 oder -1
+    el.textContent = `${value} (${diff}s)`;
+  });
+
+}, 1000);
 
 
 /* ================= SYNC ================= */
