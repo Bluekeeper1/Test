@@ -138,6 +138,55 @@ font-size: 3vh;
       0 0 15px #ff5722,
       0 0 25px #ff0000;
   }
+  
+}
+#chat {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  width: 300px;
+  height: 400px;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#messages {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  font-size: 14px;
+}
+
+.msg {
+  margin-bottom: 5px;
+  padding: 5px 8px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 8px;
+}
+
+#chatInput {
+  display: flex;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+#chatInput input {
+  flex: 1;
+  border: none;
+  padding: 10px;
+  background: transparent;
+  color: white;
+}
+
+#chatInput button {
+  background: #2196f3;
+  border: none;
+  padding: 10px;
+  color: white;
+  cursor: pointer;
 }
 </style>
 </head>
@@ -247,6 +296,16 @@ font-size: 3vh;
     <button onclick="change(6,-1)">-</button>
    </div> 
   </div>
+  <div id="chat">
+
+  <div id="messages"></div>
+
+  <div id="chatInput">
+    <input id="msgInput" placeholder="Nachricht..." />
+    <button onclick="sendMessage()">Senden</button>
+  </div>
+
+</div>
 
 </div>
 
@@ -447,6 +506,60 @@ if (counter) {
     }
   )
   .subscribe(status => setStatus(status === "SUBSCRIBED"));
+  /* =========================
+  CHAT
+========================= */
+window.sendMessage = async () => {
+  const input = document.getElementById("msgInput");
+  const text = input.value.trim();
+
+  if (!text) return;
+
+  await supabase
+    .from("chatmessages")
+    .insert({ text });
+
+  input.value = "";
+};
+async function loadMessages() {
+  const { data } = await supabase
+    .from("chatmessages")
+    .select("*")
+    .order("created_at", { ascending: true });
+
+  const box = document.getElementById("messages");
+  box.innerHTML = "";
+
+  data.forEach(msg => {
+    const div = document.createElement("div");
+    div.className = "msg";
+    div.innerText = msg.text;
+    box.appendChild(div);
+  });
+
+  box.scrollTop = box.scrollHeight;
+}
+supabase
+  .channel("chat")
+  .on(
+    "postgres_changes",
+    { event: "INSERT", schema: "public", table: "chatmessages" },
+    (payload) => {
+      const msg = payload.new;
+
+      const box = document.getElementById("messages");
+
+      const div = document.createElement("div");
+      div.className = "msg";
+      div.innerText = msg.text;
+
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+  )
+  .subscribe();
+  loadMessages();
+
 
 loadAll();
 </script>
