@@ -23,6 +23,11 @@ body {
   gap: 20px;
   align-items: center;
 }
+#totalSum {
+  font-weight: bold;
+  color: white;
+  margin-left: 50px;
+}
 
 #refreshBtn {
   padding: 10px 20px;
@@ -145,7 +150,7 @@ font-size: 3vh;
   bottom: 1px;
   right: 1px;
   width: 300px;
-  height: 300px;
+  height: 200px;
   background: rgba(0,0,0,0.6);
   backdrop-filter: blur(10px);
   border-radius: 15px;
@@ -228,6 +233,8 @@ font-size: 3vh;
   <div id="dot"></div>
   <span id="status">connecting...</span>
   <span id="syncTime">sync: nie</span>
+
+  <span id="totalSum"> Gesamt: 0</span>
 </div>
 
 <div id="grid">
@@ -439,6 +446,7 @@ window.change = async (id, delta) => {
    LOAD
 ========================= */
 async function loadAll() {
+  
   const { data } = await supabase
     .from("groupecounter")
     .select("*");
@@ -462,6 +470,20 @@ async function loadAll() {
   // ✅ FIX: Sync-Zeit auch bei Refresh setzen
   lastSync = Date.now();
 }
+async function updateTotalSum() {
+  const { data } = await supabase
+    .from("groupecounter")
+    .select("value");
+
+  let sum = 0;
+
+  data.forEach(row => {
+    sum += row.value || 0;
+  });
+
+  document.getElementById("totalSum").innerText = "Gesamt: " + sum;
+}
+updateTotalSum();
 window.toggleFlame = async (id, flameNumber) => {
   const column = flameNumber === 1 ? "flame1" : "flame2";
 
@@ -536,6 +558,7 @@ if (counter) {
 
       lastSync = Date.now();
       triggerSound();
+      updateTotalSum();
     }
   )
   .subscribe(status => setStatus(status === "SUBSCRIBED"));
@@ -677,4 +700,3 @@ setInterval(pollMessages, 1500);
 
 </body>
 </html>
-
