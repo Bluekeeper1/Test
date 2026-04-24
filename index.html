@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Restaurant </title>
+<title>Multi Counter</title>
 
 <style>
 body {
@@ -11,336 +11,196 @@ body {
   font-family: sans-serif;
   background: #111;
   color: white;
-  overflow: hidden;
-  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100vh;
 }
 
-/* ================= TOP COLOR BAR ================= */
-#topBar {
-  position: fixed;
-  bottom: 0;
-  right: 0px;
-  width: 100%;
-  height: 30vh;
-  z-index: -3;
-  pointer-events: none;
-  transition: background 0.3s ease;
-}
-/* ================= TOP COLOR BAR ================= */
-#rightbar {
-  position: fixed;
-  bottom: 0;
-  right: 5px;
-  width: 100%;
-  height: 20vh;
-  z-index: -3;
-  pointer-events: none;
-  transition: background 0.3s ease;
-}
-/* ================= LIMIT OVERLAY ================= */
-#limitOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(183, 28, 28, 0);
-  z-index: -5;
-  pointer-events: none;
-  transition: background 0.3s ease;
-}
-
-body.limitReached #limitOverlay {
-  background: rgb(218, 0, 0);
-}
-
-/* ================= SYNC ================= */
-#syncStatus {
-  position: absolute;
-  top: 2vh;
-  left: 2vw;
+#topbar {
+  background: #1e1e1e;
+  padding: 2px;
   display: flex;
+  gap: 20px;
   align-items: center;
-  gap: 10px;
 }
 
-#dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: gray;
-}
-
-/* ================= LAST UPDATE ================= */
-#lastUpdate {
-  position: absolute;
-  top: 6vh;
-  left: 2vw;
-  opacity: 0.7;
-}
-
-/* ================= REFRESH ================= */
 #refreshBtn {
-  position: absolute;
-  top: 10vh;
-  left: 2vw;
-  padding: 4vh 4vw;
+  padding: 10px 20px;
   border: none;
-  border-radius: 200px;
+  border-radius: 10px;
   background: #2196f3;
   color: white;
   cursor: pointer;
 }
 
-#refreshBtn:disabled {
-  opacity: 0.4;
+#dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: gray;
 }
 
-
-/* ================= MAX ================= */
-#maxContainer {
-  position: absolute;
-  top: 2vh;
-  right: 2vw;
-  background: rgb(0,153,255);
-  border-radius: 12px;
-  padding: 1vh 1vw;
-  text-align: center;
+#grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
 }
 
-#maxValue {
-  font-size: 30px;
-}
-
-#maxButtons button {
-  margin: 1px;
-  border: none;
-  padding: 4px 10px;
-  border-radius: 6px;
-  color: white;
-  cursor: pointer;
-}
-
-#maxPlus { background: #4caf50; }
-#maxMinus { background: #f44336; }
-
-/* ================= COUNTER ================= */
-#count {
+.counter {
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  height: 70vh;
-  font-size: clamp(150px, 100vmin, 200px);
+  font-size: 20px;
+  font-weight: bold;
 }
 
-/* ================= BUTTONS ================= */
-#buttons {
+.value { font-size: 100px; }
+
+button {
+  font-size: 30px;
+  padding: 5px 15px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  margin: 5px;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.green { background:#4CAF50; }
+.red { background:#f44336; }
+.blue { background:#2196F3; }
+.yellow { background:#FFEB3B; color:black; }
+.purple { background:#9C27B0; }
+.orange { background:#FF9800; }
+
+.flames {
+  margin-top: 10px;
   display: flex;
-  justify-content: center;
   gap: 10px;
 }
 
-button {
-  font-size: 60px;
-  padding: 20px 90px;
-  border: none;
-  border-radius: 60px;
-  color: white;
-  cursor: pointer;
-}
-#buttonContainer {
-  position: absolute;
-  top: 69vh;
-  left: 50%;
-  transform: translateX(-50%);
-
-  padding: 64px 220px;
-
-  border-radius: 40px;
-
-  /* GLASS LOOK */
-  background: rgba(0, 0, 0, 0.92);
-  backdrop-filter: blur(15px);
-
-  /* GLOW */
-  box-shadow: 0 0 25px rgba(0, 150, 255, 0.4);
-
-  z-index: -1;
-}
-
-#plus { background: #4caf50; }
-#minus { background: #f44336; }
-
-/* ================= COLORS ================= */
-#colorPicker {
-  position: fixed;
-  bottom: 1vh;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 12px;
-}
-
-.colorDot {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  border: 2px solid white;
+.flame {
+  font-size: 30px;
+  opacity: 0.3;
   cursor: pointer;
   transition: 0.2s;
 }
 
-.colorDot.active {
-  transform: scale(1.25);
-  box-shadow: 0 0 10px white;
+.flame.active {
+  opacity: 1;
+  transform: scale(1.2);
 }
-
-/* ================= LOG (RIGHT NEXT TO NUMBER) ================= */
-
-
-#log {
-  width: 90%;
-  height: 85%;
-
-  display: flex;
-  flex-direction: column;
-
-  justify-content: flex-start; /* 👈 START OBEN */
-  align-items: flex-start;
-
-  gap: 10px;
-
-  overflow-y: auto; /* falls zu viele Logs */
-  overflow-x: hidden;
-
-  padding-top: 0px;
-}
-.logEntry {
-  display: flex;
-  flex-direction: row;
-  align-items: center;   /* 👈 DAS ist der entscheidende Fix */
-
-  justify-content: center;
-  gap: 0px;
-
-  white-space: nowrap;
-}
-
-#logContainer {
-  position: fixed;
-  top: 22vh;
-  right: 2vw;          /* stabil statt left:85% */
-  
-  width: 100px;        /* feste, saubere Größe */
-  height: 42vh;
-
-  border-radius: 40px;
-
-  background: rgba(0, 0, 0, 0.92);
-  backdrop-filter: blur(15px);
-
-  box-shadow: 0 0 25px rgba(0, 150, 255, 0.4);
-
-  z-index: 5;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-
-  .colorBubble {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-
-  flex-shrink: 0;   /* 🔥 verhindert Zusammendrücken */
-  aspect-ratio: 1 / 1; /* extra Sicherheit für perfekte Rundheit */
-}
-
 </style>
 </head>
 
 <body>
-  <audio id="counterSound" src="click.mp3" preload="auto"></audio>
 
-<div id="topBar"></div>
-<div id="limitOverlay"></div>
+<audio id="sound" src="click.mp3" preload="auto"></audio>
 
-<!-- SYNC -->
-<div id="syncStatus">
+<div id="topbar">
+  <button id="refreshBtn">↻</button>
   <div id="dot"></div>
-  <span id="syncText">connecting...</span>
+  <span id="status">connecting...</span>
+  <span id="syncTime">sync: nie</span>
 </div>
 
-<div id="lastUpdate">letztes update: nie</div>
+<div id="grid">
 
-<button id="refreshBtn">↻</button>
-
-<!-- MAX -->
-<div id="maxContainer">
-  <div>Max</div>
-  <div id="maxValue">10</div>
-  <div id="maxButtons">
-    <button id="maxPlus">+</button>
-    <button id="maxMinus">-</button>
+<div class="counter green" data-id="1"><div class="flames">
+  <span class="flame" onclick="toggleFlame(1,1)">🔥</span>
+  <span class="flame" onclick="toggleFlame(1,2)">🔥</span>
+</div>
+  <div class="value">0</div>
+  <div>
+    <button onclick="change(1,1)">+</button>
+    <button onclick="change(1,-1)">-</button>
   </div>
+  
 </div>
 
-<!-- LOG -->
-<div id="logContainer">
-  <div id="log"></div>
+
+<div class="counter red" data-id="2"><div class="flames">
+  <span class="flame" onclick="toggleFlame(1,1)">🔥</span>
+  <span class="flame" onclick="toggleFlame(1,2)">🔥</span>
 </div>
-
-<!-- COUNTER -->
-<div id="count">0</div>
-
-<!-- BUTTONS -->
-<div id="buttons">
-  <button id="plus">+</button>
-  <button id="minus">-</button>
+  <div class="value">0</div>
+  <div>
+    <button onclick="change(2,1)">+</button>
+    <button onclick="change(2,-1)">-</button>
+   </div> 
 </div>
+  
 
-<div id="buttonContainer">
-  <div id="buttons">
-    
+<div class="counter blue" data-id="3"><div class="flames">
+  <span class="flame" onclick="toggleFlame(1,1)">🔥</span>
+  <span class="flame" onclick="toggleFlame(1,2)">🔥</span>
+</div>
+  <div class="value">0</div>
+  <div>
+    <button onclick="change(3,1)">+</button>
+    <button onclick="change(3,-1)">-</button>
+   </div> 
+     </div>
+
+
+<div class="counter yellow" data-id="4"><div class="flames">
+  <span class="flame" onclick="toggleFlame(1,1)">🔥</span>
+  <span class="flame" onclick="toggleFlame(1,2)">🔥</span>
+</div>
+  <div class="value">0</div>
+  <div>
+    <button onclick="change(4,1)">+</button>
+    <button onclick="change(4,-1)">-</button>
+   </div> 
   </div>
-</div>
 
-<!-- COLORS -->
-<div id="colorPicker">
-  <div class="colorDot" data-color="#4fc42b" style="background:#4fc42b"></div>
-  <div class="colorDot" data-color="#ff3939" style="background:#ff3939"></div>
-  <div class="colorDot" data-color="#1a91f3" style="background:#1a91f3"></div>
-  <div class="colorDot" data-color="#ffff00" style="background:#ffff00"></div>
-  <div class="colorDot" data-color="#8c00ff" style="background:#8c00ff"></div>
-  <div class="colorDot" data-color="#ff00ff" style="background:#ff00ff"></div>
+<div class="counter purple" data-id="5"><div class="flames">
+  <span class="flame" onclick="toggleFlame(1,1)">🔥</span>
+  <span class="flame" onclick="toggleFlame(1,2)">🔥</span>
+</div>
+  <div class="value">0</div>
+  <div>
+    <button onclick="change(5,1)">+</button>
+    <button onclick="change(5,-1)">-</button>
+  </div> 
+  </div>
+
+<div class="counter orange" data-id="6">
+  <div class="flames">
+  <span class="flame" onclick="toggleFlame(1,1)">🔥</span>
+  <span class="flame" onclick="toggleFlame(1,2)">🔥</span>
+</div>
+  <div class="value">0</div>
+  <div>
+    <button onclick="change(6,1)">+</button>
+    <button onclick="change(6,-1)">-</button>
+   </div> 
+  </div>
+
 </div>
 
 <script type="module">
-  
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-
-/* ================= SUPABASE ================= */
 const supabase = createClient(
   "https://ollmmbnptcpktgtltzzz.supabase.co",
   "sb_publishable_7E3Ai7_08sGkXhwhm85USw_Ikf5taX1"
 );
 
-/* ================= STATE ================= */
-let count = 0;
-let maxValue = 10;
-let localColor = localStorage.getItem("color") || "#111";
-let lastEventTime = Date.now();
-
-let audio = document.getElementById("counterSound");
+/* =========================
+   SOUND
+========================= */
+const audio = document.getElementById("sound");
 
 let soundUnlocked = false;
+let lastEventTime = 0;
 let soundTimer = null;
-let lastSoundEvent = 0;
 
-/* ================= UNLOCK ================= */
 document.addEventListener("click", () => {
   if (soundUnlocked) return;
 
@@ -353,258 +213,165 @@ document.addEventListener("click", () => {
     .catch(() => {});
 }, { once: true });
 
-
-/* ================= SOUND TRIGGER ================= */
 function triggerSound() {
-  if (!soundUnlocked || !audio) return;
+  if (!soundUnlocked) return;
 
-  lastSoundEvent = Date.now();
+  lastEventTime = Date.now();
   clearTimeout(soundTimer);
 
   soundTimer = setTimeout(() => {
-    if (Date.now() - lastSoundEvent >= 2000) {
+    if (Date.now() - lastEventTime >= 2000) {
       audio.currentTime = 0;
       audio.play().catch(() => {});
     }
   }, 2000);
 }
 
-/* ================= COLOR BAR ================= */
-const topBar = document.getElementById("topBar");
-
-function applyColor(c) {
-  topBar.style.background = c;
+/* =========================
+   STATUS
+========================= */
+function setStatus(ok) {
+  document.getElementById("dot").style.background = ok ? "#4CAF50" : "gray";
+  document.getElementById("status").innerText = ok ? "verbunden" : "connecting...";
 }
 
-/* ================= COLOR PICKER ================= */
-const dots = document.querySelectorAll(".colorDot");
+/* =========================
+   SYNC TIME
+========================= */
+let lastSync = null;
 
-function setActive(c) {
-  dots.forEach(d => d.classList.toggle("active", d.dataset.color === c));
+function formatTime(ms) {
+  const sec = Math.floor(ms / 1000);
+  const min = Math.floor(sec / 60);
+  const hour = Math.floor(min / 60);
+
+  if (sec < 60) return `sync: vor ${sec}s`;
+  if (min < 60) return `sync: vor ${min}min`;
+  return `sync: vor ${hour}h`;
 }
 
-applyColor(localColor);
-setActive(localColor);
-
-dots.forEach(d => {
-  d.onclick = () => {
-    localColor = d.dataset.color;
-    localStorage.setItem("color", localColor);
-    applyColor(localColor);
-    setActive(localColor);
-  };
-});
-
-/* ================= LIMIT ================= */
-function checkLimit() {
-  document.body.classList.toggle("limitReached", count >= maxValue);
+function updateSync() {
+  if (!lastSync) return;
+  document.getElementById("syncTime").innerText =
+    formatTime(Date.now() - lastSync);
 }
 
+setInterval(updateSync, 1000);
 
-/* ================= LOG ================= */
-function addLog(delta, color) {
-  const log = document.getElementById("log");
-
-  const row = document.createElement("div");
-  row.className = "logEntry";
-  
-
-  const bubble = document.createElement("div");
-  bubble.className = "colorBubble";
-
-  // ✅ Bubble bleibt wie vorher (z.B. vom ColorPicker)
-  bubble.style.background = color || "#fff";
-
-  const text = document.createElement("span");
-
-  // ⬇️ Zeit speichern
-  const timestamp = Date.now();
-  text.dataset.time = timestamp;
-
-  // ✅ Textfarbe je nach Wert
-  text.style.color = delta > 0 ? "#4caf50" : "#f44336";
-
-  text.textContent = `${delta > 0 ? "+" : ""}${delta} (0s)`;
-
-  row.appendChild(bubble);
-  row.appendChild(text);
-
-  log.prepend(row);
-
-  if (log.children.length > 10) {
-    log.removeChild(log.lastChild);
-  }
-}
-// ⬇️ live update
-setInterval(() => {
-  const entries = document.querySelectorAll("#log span");
-
-  entries.forEach(el => {
-    const time = parseInt(el.dataset.time);
-    const diff = Math.floor((Date.now() - time) / 1000);
-
-    const value = el.textContent.split(" ")[0]; // +1 oder -1
-    el.textContent = `${value} (${diff}s)`;
-  });
-
-}, 1000);
-
-
-/* ================= SYNC ================= */
-function setSync(state) {
-  const dot = document.getElementById("dot");
-  const text = document.getElementById("syncText");
-
-  if (state === "online") {
-    dot.style.background = "#4CAF50";
-    text.textContent = "online";
-  } else if (state === "offline") {
-    dot.style.background = "#f44336";
-    text.textContent = "offline";
-  } else {
-    dot.style.background = "gray";
-    text.textContent = "Verbinde...";
-  }
-}
-
-/* ================= LOAD ================= */
-async function load() {
+/* =========================
+   CHANGE
+========================= */
+window.change = async (id, delta) => {
   const { data } = await supabase
-    .from("counter")
-    .select("*")
-    .eq("id", 1)
-    .single();
-
-  count = data.value;
-  maxValue = data.max_value ?? 10;
-
-  document.getElementById("count").innerText = count;
-  document.getElementById("maxValue").innerText = maxValue;
-
-  checkLimit();
-}
-
-/* ================= UPDATE ================= */
-
-async function update(delta) {
-
-  const { data } = await supabase
-    .from("counter")
+    .from("groupecounter")
     .select("value")
-    .eq("id", 1)
+    .eq("id", id)
     .single();
 
-  await supabase
-    .from("counter")
-    .update({
-      value: data.value + delta,
-      last_delta: delta,
-      last_color: localColor
-    })
-    .eq("id", 1);
-}
+  const newValue = data.value + delta;
 
-/* ================= MAX (FIXED) ================= */
-async function updateMax(delta) {
+  const { error } = await supabase
+    .from("groupecounter")
+    .update({ value: newValue })
+    .eq("id", id);
+
+  if (!error) triggerSound();
+};
+
+/* =========================
+   LOAD
+========================= */
+async function loadAll() {
+  const { data } = await supabase
+    .from("groupecounter")
+    .select("*");
+
+  data.forEach(row => {
+    const el = document.querySelector(`[data-id="${row.id}"] .value`);
+    if (el) el.innerText = row.value;
+  });
+
+  // ✅ FIX: Sync-Zeit auch bei Refresh setzen
+  lastSync = Date.now();
+}
+/* =========================
+   LOAD FLAMES
+========================= */
+
+data.forEach(row => {
+  const counter = document.querySelector(`[data-id="${row.id}"]`);
+
+  const valueEl = counter.querySelector(".value");
+  if (valueEl) valueEl.innerText = row.value;
+
+  const flames = counter.querySelectorAll(".flame");
+
+  flames[0].classList.toggle("active", row.flame1);
+  flames[1].classList.toggle("active", row.flame2);
+});
+/* =========================
+   REFRESH BUTTON
+========================= */
+const refreshBtn = document.getElementById("refreshBtn");
+
+refreshBtn.addEventListener("click", async () => {
+  refreshBtn.disabled = true;
+
+  await loadAll();
+
+  setTimeout(() => {
+    refreshBtn.disabled = false;
+  }, 5000);
+});
+/* =========================
+   FLAMES
+========================= */
+window.toggleFlame = async (id, flameNumber) => {
+  const column = flameNumber === 1 ? "flame1" : "flame2";
 
   const { data } = await supabase
-    .from("counter")
-    .select("max_value")
-    .eq("id", 1)
+    .from("groupecounter")
+    .select(column)
+    .eq("id", id)
     .single();
 
-  let newMax = (data.max_value ?? 10) + delta;
-  if (newMax < 0) newMax = 0;
+  const newValue = !data[column];
 
   await supabase
-    .from("counter")
-    .update({ max_value: newMax })
-    .eq("id", 1);
-
-  maxValue = newMax;
-  document.getElementById("maxValue").innerText = maxValue;
-
-  checkLimit();  
-}
-
-/* ================= BUTTONS ================= */
-document.getElementById("plus").onclick = () => update(1);
-document.getElementById("minus").onclick = () => update(-1);
-
-document.getElementById("maxPlus").onclick = () => updateMax(1);
-document.getElementById("maxMinus").onclick = () => updateMax(-1);
-
-/* ================= REALTIME ================= */
-supabase.channel("counter-live")
-  .on("postgres_changes", { event: "*", schema: "public", table: "counter" }, payload => {
-
-    lastEventTime = Date.now();
-    setSync("online");
-
-    const d = payload.new;
-
-    count = d.value;
-    maxValue = d.max_value ?? 10;
-
-    document.getElementById("count").innerText = count;
-    document.getElementById("maxValue").innerText = maxValue;
-
-    checkLimit();
-
-    if (d.last_delta !== null && d.last_delta !== 0) {
-      addLog(d.last_delta, d.last_color);
-    }
-
-triggerSound();
-  })
-  .subscribe((status) => {
-
-    if (status === "SUBSCRIBED") setSync("online");
-    else if (status === "CLOSED" || status === "TIMED_OUT") setSync("offline");
-    else setSync("connecting");
-  });
-document.getElementById("refreshBtn").onclick = async () => {
-  setSync("connecting"); // optional visuelles Feedback
-
-  await load(); // lädt Counter + Max neu aus Supabase
-
-  lastEventTime = Date.now();
-
-  setSync("online");
-
-  // Button kurz deaktivieren (optional, aber sinnvoll)
- const btn = document.getElementById("refreshBtn");
-
-  btn.disabled = true;
-  setTimeout(() => {
-    btn.disabled = false;
-  }, 5000);
+    .from("groupecounter")
+    .update({ [column]: newValue })
+    .eq("id", id);
 };
-function updateLastUpdateDisplay() {
-  const el = document.getElementById("lastUpdate");
+/* =========================
+   REALTIME
+========================= */
+supabase
+  .channel("multi")
+  .on(
+    "postgres_changes",
+    { event: "*", schema: "public", table: "groupecounter" },
+    (payload) => {
+      const row = payload.new;
 
-  const diff = Math.floor((Date.now() - lastEventTime) / 1000);
+      const el = document.querySelector(`[data-id="${row.id}"] .value`);
+      if (el) el.innerText = row.value;
 
-  if (diff < 5) {
-    el.innerText = "letztes update: gerade eben";
-  } else if (diff < 60) {
-    el.innerText = `letztes update: vor ${diff} sek`;
-  } else {
-    const min = Math.floor(diff / 60);
-    el.innerText = `letztes update: vor ${min} min`;
-  }
+      lastSync = Date.now();
+      triggerSound();
+    }
+  )
+  .subscribe(status => setStatus(status === "SUBSCRIBED"));
+ 
+  const counter = document.querySelector(`[data-id="${row.id}"]`);
+
+if (counter) {
+  const flames = counter.querySelectorAll(".flame");
+
+  flames[0].classList.toggle("active", row.flame1);
+  flames[1].classList.toggle("active", row.flame2);
 }
-setInterval(updateLastUpdateDisplay, 1000);
-/* ================= HEARTBEAT ================= */
-setInterval(() => {
-  if (Date.now() - lastEventTime > 8000) {
-    setSync("offline");
-  }
-}, 2000);
 
-
-load();
-applyColor(localColor);
+loadAll();
 </script>
 
 </body>
