@@ -145,7 +145,7 @@ font-size: 3vh;
   bottom: 1px;
   right: 1px;
   width: 300px;
-  height: 200px;
+  height: 300px;
   background: rgba(0,0,0,0.6);
   backdrop-filter: blur(10px);
   border-radius: 15px;
@@ -162,8 +162,8 @@ font-size: 3vh;
 }
 
 .msg {
-  margin-bottom: 5px;
-  padding: 5px 8px;
+  margin-bottom: 1px;
+  padding: 1px 1px;
   background: rgba(255,255,255,0.1);
   border-radius: 8px;
 }
@@ -176,7 +176,7 @@ font-size: 3vh;
 #chatInput input {
   flex: 1;
   border: none;
-  padding: 10px;
+  padding: 2px;
   background: transparent;
   color: white;
 }
@@ -184,9 +184,37 @@ font-size: 3vh;
 #chatInput button {
   background: #2196f3;
   border: none;
-  padding: 10px;
+  padding: 0px;
   color: white;
   cursor: pointer;
+}
+#colorPicker {
+  display: flex;
+  gap: 20px;
+  padding: 5px 10px;
+  justify-content: center;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+#colorPicker span {
+  cursor: pointer;
+  font-size: 22px;
+  opacity: 0.5;
+  transition: 0.2s;
+}
+
+#colorPicker span:hover {
+  opacity: 1;
+  transform: scale(1.2);
+}
+#colorPicker span.active {
+  opacity: 1;
+  transform: scale(2.8);
+  text-shadow: 0 0 10px currentColor;
+}
+.msg {
+  display: flex;
+  align-items: center;
 }
 </style>
 </head>
@@ -302,11 +330,15 @@ font-size: 3vh;
 
   <div id="chatInput">
     <input id="msgInput" placeholder="Nachricht..." />
-    <button onclick="sendMessage()">Senden</button>
+    <button onclick="sendMessage()">►</button>
   </div>
-
-</div>
-
+  <div id="colorPicker">
+  <span onclick="setColor('#4CAF50')" style="color:#4CAF50">●</span>
+  <span onclick="setColor('#f44336')" style="color:#f44336">●</span>
+  <span onclick="setColor('#2196F3')" style="color:#2196F3">●</span>
+  <span onclick="setColor('yellow')" style="color:yellow">●</span>
+  <span onclick="setColor('purple')" style="color:purple">●</span>
+  <span onclick="setColor('orange')" style="color:orange">●</span>
 </div>
 
 <script type="module">
@@ -510,54 +542,96 @@ if (counter) {
   /* =========================
   CHAT
 ========================= */
-// =========================
-// CHAT SYSTEM (POLLING - OHNE REALTIME)
-// =========================
+let userColor = localStorage.getItem("chatColor") || "#2196F3";
 
-let lastMessageTime = null;
+window.setColor = function (color) {
+  userColor = color;
+  localStorage.setItem("chatColor", color);
 
-// Nachricht anzeigen
+  // UI Update (Highlight)
+  document.querySelectorAll("#colorPicker span").forEach(el => {
+    el.classList.remove("active");
+  });
+
+  const active = [...document.querySelectorAll("#colorPicker span")]
+    .find(el => el.getAttribute("onclick").includes(color));
+
+  if (active) active.classList.add("active");
+};
+window.addEventListener("load", () => {
+  const saved = localStorage.getItem("chatColor");
+  if (saved) setColor(saved);
+});
+
+// -------------------------
+// UI
+// -------------------------
 function addMessageToUI(msg) {
   const box = document.getElementById("messages");
 
   const div = document.createElement("div");
   div.className = "msg";
 
- const time = new Date(msg.created_at).toLocaleTimeString("de-DE", {
-  timeZone: "Europe/Berlin",
-  hour: "2-digit",
-  minute: "2-digit"
-});
+  const time = new Date(msg.created_at).toLocaleTimeString("de-DE", {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
 
   div.innerHTML = `
-    <div style="font-size:12px; opacity:0.6; margin-bottom:2px;">
+    <span style="
+      font-size:10px;
+      opacity:0.4;
+      margin-right:6px;
+      white-space:nowrap;
+    ">
       ${time}
-    </div>
-    <div>${msg.text}</div>
+    </span>
+
+    <span style="
+      display:inline-block;
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:${msg.color || "#2196F3"};
+      margin-right:6px;
+      flex-shrink:0;
+    "></span>
+
+    <span style="color:white;">
+      ${msg.text}
+    </span>
   `;
 
   box.appendChild(div);
   box.scrollTop = box.scrollHeight;
 }
-
-// Nachricht senden
+// -------------------------
+// SEND
+// -------------------------
 window.sendMessage = async () => {
   const input = document.getElementById("msgInput");
   const text = input.value.trim();
 
   if (!text) return;
 
-  await supabase.from("chatmessages").insert({ text });
+  await supabase.from("chatmessages").insert({
+    text,
+    color: userColor
+  });
 
   input.value = "";
 };
 
-// Enter senden
+// ENTER
 document.getElementById("msgInput").addEventListener("keydown", (e) => {
   if (e.key === "Enter") sendMessage();
 });
 
-// Erstes Laden
+// -------------------------
+// LOAD
+// -------------------------
+let lastMessageTime = null;
+
 async function loadMessages() {
   const { data } = await supabase
     .from("chatmessages")
@@ -574,7 +648,9 @@ async function loadMessages() {
   }
 }
 
-// neue Nachrichten prüfen
+// -------------------------
+// POLL (LIVE WITHOUT REPLICATION)
+// -------------------------
 async function pollMessages() {
   if (!lastMessageTime) {
     await loadMessages();
@@ -596,7 +672,9 @@ async function pollMessages() {
 // START
 loadMessages();
 setInterval(pollMessages, 1500);
+
 </script>
 
 </body>
 </html>
+
