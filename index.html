@@ -76,12 +76,13 @@ button:disabled {
   cursor: not-allowed;
 }
 
-.green { background:#4CAF50; }
-.red { background:#f44336; }
-.blue { background:#2196F3; }
-.yellow { background:#FFEB3B; color:black; }
-.purple { background:#9C27B0; }
-.orange { background:#FF9800; }
+.green { background: #4CAF50; }
+.red { background #f44336; }
+.blue { background: #2196F3; }
+.yellow { background: #FFEB3B; color:black; }
+.purple { background: #9C27B0; }
+.orange { background: #FF9800; }
+.white   { background: #ffffff;color:black }
 
 .Überschrift{
 font-size: 3vh;
@@ -331,6 +332,20 @@ font-size: 3vh;
     <button onclick="change(6,-1)">-</button>
    </div> 
   </div>
+  <div class="counter white" data-id="7">
+  <div class="Überschrift">
+  <span class="Überschrift">Resturant</span>
+  </div><div class="flames">
+  
+  <span class="flame" onclick="toggleFlame(7,1)">🔥</span>
+  <span class="flame" onclick="toggleFlame(7,2)">🔥</span>
+</div>
+  <div class="value">0</div>
+  <div>
+    <button onclick="change(7,1)">+</button>
+    <button onclick="change(7,-1)">-</button>
+  </div> 
+  </div>
   <div id="chat">
 
   <div id="messages"></div>
@@ -346,6 +361,7 @@ font-size: 3vh;
   <span onclick="setColor('yellow')" style="color:yellow">●</span>
   <span onclick="setColor('purple')" style="color:purple">●</span>
   <span onclick="setColor('orange')" style="color:orange">●</span>
+  <span onclick="setColor('white')" style="color:white">●</span>
 </div>
 
 <script type="module">
@@ -451,19 +467,17 @@ async function loadAll() {
     .from("groupecounter")
     .select("*");
 
-  data.forEach(row => {
-    const el = document.querySelector(`[data-id="${row.id}"] .value`);
-    if (el) el.innerText = row.value;
-  });data.forEach(row => {
+data.forEach(row => {
   const counter = document.querySelector(`[data-id="${row.id}"]`);
+  if (!counter) return;
 
   const valueEl = counter.querySelector(".value");
   if (valueEl) valueEl.innerText = row.value;
 
   const flames = counter.querySelectorAll(".flame");
 
-  flames[0].classList.toggle("active", row.flame1);
-  flames[1].classList.toggle("active", row.flame2);
+  if (flames[0]) flames[0].classList.toggle("active", row.flame1);
+  if (flames[1]) flames[1].classList.toggle("active", row.flame2);
 });
 
 
