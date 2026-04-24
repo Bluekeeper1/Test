@@ -150,7 +150,7 @@ font-size: 3vh;
   position: fixed;
   bottom: 1px;
   right: 1px;
-  width: 300px;
+  width: 250px;
   height: 200px;
   background: rgba(0,0,0,0.6);
   backdrop-filter: blur(10px);
@@ -180,9 +180,9 @@ font-size: 3vh;
 }
 
 #chatInput input {
-  flex: 1;
+  flex: 0;
   border: none;
-  padding: 2px;
+  padding: 0px;
   background: transparent;
   color: white;
 }
@@ -197,9 +197,9 @@ font-size: 3vh;
 #colorPicker {
   display: flex;
   gap: 20px;
-  padding: 5px 10px;
+  padding: 1px 1px;
   justify-content: center;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 2px solid rgba(255,255,255,0.1);
 }
 
 #colorPicker span {
@@ -448,7 +448,10 @@ window.change = async (id, delta) => {
     .eq("id", id)
     .single();
 
-  const newValue = data.value + delta;
+  let newValue = data.value + delta;
+
+  // ❌ KEIN Minus erlauben
+  if (newValue < 0) newValue = 0;
 
   const { error } = await supabase
     .from("groupecounter")
