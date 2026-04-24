@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Multi Counter</title>
+<title>Gruppenzähler</title>
 
 <style>
 body {
@@ -58,12 +58,12 @@ body {
 .value { font-size: 100px; }
 
 button {
-  font-size: 30px;
-  padding: 5px 15px;
-  border: none;
-  border-radius: 10px;
+  font-size: 50px;
+  padding: 10px 20px;
+  border: 1;
+  border-radius: 20px;
   cursor: pointer;
-  margin: 5px;
+  margin: 0px;
 }
 
 button:disabled {
@@ -78,12 +78,25 @@ button:disabled {
 .purple { background:#9C27B0; }
 .orange { background:#FF9800; }
 
+.Überschrift{
+font-size: 3vh;
+}
 .flames {
   margin-top: 10px;
   display: flex;
   gap: 10px;
+
+  /* 🔲 BOX */
+  background: rgba(0, 0, 0, 0.75);
+  padding: 8px 14px;
+  border-radius: 12px;
+
+  /* optional Glass Effekt */
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.64);
 }
 
+/* 🔥 einzelne Flammen */
 .flame {
   font-size: 30px;
   opacity: 0.3;
@@ -91,9 +104,40 @@ button:disabled {
   transition: 0.2s;
 }
 
+/* aktive Flamme */
 .flame.active {
   opacity: 1;
-  transform: scale(1.2);
+  animation: flameFlicker 0.4s infinite alternate;
+}
+
+/* ✨ wenn mindestens eine aktiv → Box glow */
+.flames.active-box {
+  box-shadow: 0 0 15px rgba(255, 119, 0, 0.81);
+}
+
+/* 🔥 Animation */
+@keyframes flameFlicker {
+  0% {
+    transform: scale(1) rotate(-2deg);
+    text-shadow: 
+      0 0 5px #ff9800,
+      0 0 10px #ff5722,
+      0 0 20px #ff0000;
+  }
+  50% {
+    transform: scale(1.1) rotate(2deg);
+    text-shadow: 
+      0 0 10px #ffc107,
+      0 0 20px #ff9800,
+      0 0 30px #ff5722;
+  }
+  100% {
+    transform: scale(0.95) rotate(-1deg);
+    text-shadow: 
+      0 0 8px #ff9800,
+      0 0 15px #ff5722,
+      0 0 25px #ff0000;
+  }
 }
 </style>
 </head>
@@ -110,8 +154,11 @@ button:disabled {
 </div>
 
 <div id="grid">
-
-<div class="counter green" data-id="1"><div class="flames">
+<div class="counter green" data-id="1">
+  <div class="Überschrift">
+  <span class="Überschrift">Bauraum</span>
+  </div> 
+  <div class="flames">
   <span class="flame" onclick="toggleFlame(1,1)">🔥</span>
   <span class="flame" onclick="toggleFlame(1,2)">🔥</span>
 </div>
@@ -124,7 +171,11 @@ button:disabled {
 </div>
 
 
-<div class="counter red" data-id="2"><div class="flames">
+<div class="counter red" data-id="2">
+  <div class="Überschrift">
+  <span class="Überschrift">Atelier</span>
+  </div><div class="flames">
+  
   <span class="flame" onclick="toggleFlame(2,1)">🔥</span>
   <span class="flame" onclick="toggleFlame(2,2)">🔥</span>
 </div>
@@ -136,7 +187,11 @@ button:disabled {
 </div>
   
 
-<div class="counter blue" data-id="3"><div class="flames">
+<div class="counter blue" data-id="3">
+  <div class="Überschrift">
+  <span class="Überschrift">Strand</span>
+  </div><div class="flames">
+  
   <span class="flame" onclick="toggleFlame(3,1)">🔥</span>
   <span class="flame" onclick="toggleFlame(3,2)">🔥</span>
 </div>
@@ -148,7 +203,11 @@ button:disabled {
      </div>
 
 
-<div class="counter yellow" data-id="4"><div class="flames">
+<div class="counter yellow" data-id="4">
+  <div class="Überschrift">
+  <span class="Überschrift">Markt</span>
+  </div><div class="flames">
+  
   <span class="flame" onclick="toggleFlame(4,1)">🔥</span>
   <span class="flame" onclick="toggleFlame(4,2)">🔥</span>
 </div>
@@ -159,7 +218,11 @@ button:disabled {
    </div> 
   </div>
 
-<div class="counter purple" data-id="5"><div class="flames">
+<div class="counter purple" data-id="5">
+  <div class="Überschrift">
+  <span class="Überschrift">Wald</span>
+  </div><div class="flames">
+  
   <span class="flame" onclick="toggleFlame(5,1)">🔥</span>
   <span class="flame" onclick="toggleFlame(5,2)">🔥</span>
 </div>
@@ -171,6 +234,9 @@ button:disabled {
   </div>
 
 <div class="counter orange" data-id="6">
+  <div class="Überschrift">
+  <span class="Überschrift">Strand</span>
+  </div>
   <div class="flames">
   <span class="flame" onclick="toggleFlame(6,1)">🔥</span>
   <span class="flame" onclick="toggleFlame(6,2)">🔥</span>
