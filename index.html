@@ -222,6 +222,32 @@ font-size: 3vh;
   display: flex;
   align-items: center;
 }
+
+/* ✨ ruhiges Pulsieren */
+@keyframes plusPulse {
+  0% {
+    transform: scale(1);
+    text-shadow: 0 0 5px #2196F3;
+  }
+  50% {
+    transform: scale(1.15);
+    text-shadow: 0 0 15px #2196F3;
+  }
+  100% {
+    transform: scale(1);
+    text-shadow: 0 0 5px #2196F3;
+  }
+}
+.flame.plus {
+  color: #2196F3;
+  opacity: 0.3;
+}
+
+/* nur wenn aktiv */
+.flame.plus.active {
+  opacity: 1;
+  animation: plusPulse 2s ease-in-out infinite;
+}
 </style>
 </head>
 
@@ -244,7 +270,7 @@ font-size: 3vh;
   <span class="Überschrift">Bauraum</span>
   </div> 
   <div class="flames">
-  <span class="flame" onclick="toggleFlame(1,1)">🔥</span>
+  <span class="flame plus" onclick="toggleFlame(1,1)">➕</span>
   <span class="flame" onclick="toggleFlame(1,2)">🔥</span>
 </div>
   <div class="value">0</div>
@@ -261,7 +287,7 @@ font-size: 3vh;
   <span class="Überschrift">Atelier</span>
   </div><div class="flames">
   
-  <span class="flame" onclick="toggleFlame(2,1)">🔥</span>
+  <span class="flame plus" onclick="toggleFlame(2,1)">➕</span>
   <span class="flame" onclick="toggleFlame(2,2)">🔥</span>
 </div>
   <div class="value">0</div>
@@ -277,7 +303,7 @@ font-size: 3vh;
   <span class="Überschrift">Strand</span>
   </div><div class="flames">
   
-  <span class="flame" onclick="toggleFlame(3,1)">🔥</span>
+  <span class="flame plus" onclick="toggleFlame(3,1)">➕</span>
   <span class="flame" onclick="toggleFlame(3,2)">🔥</span>
 </div>
   <div class="value">0</div>
@@ -293,7 +319,7 @@ font-size: 3vh;
   <span class="Überschrift">Labor</span>
   </div><div class="flames">
   
-  <span class="flame" onclick="toggleFlame(4,1)">🔥</span>
+ <span class="flame plus" onclick="toggleFlame(4,1)">➕</span>
   <span class="flame" onclick="toggleFlame(4,2)">🔥</span>
 </div>
   <div class="value">0</div>
@@ -308,7 +334,7 @@ font-size: 3vh;
   <span class="Überschrift">Wald</span>
   </div><div class="flames">
   
-  <span class="flame" onclick="toggleFlame(5,1)">🔥</span>
+  <span class="flame plus" onclick="toggleFlame(5,1)">➕</span>
   <span class="flame" onclick="toggleFlame(5,2)">🔥</span>
 </div>
   <div class="value">0</div>
@@ -323,7 +349,7 @@ font-size: 3vh;
   <span class="Überschrift">Markt</span>
   </div>
   <div class="flames">
-  <span class="flame" onclick="toggleFlame(6,1)">🔥</span>
+  <span class="flame plus" onclick="toggleFlame(6,1)">➕</span>
   <span class="flame" onclick="toggleFlame(6,2)">🔥</span>
 </div>
   <div class="value">0</div>
@@ -337,7 +363,7 @@ font-size: 3vh;
   <span class="Überschrift">Hof</span>
   </div><div class="flames">
   
-  <span class="flame" onclick="toggleFlame(7,1)">🔥</span>
+  <span class="flame plus" onclick="toggleFlame(7,1)">➕</span>
   <span class="flame" onclick="toggleFlame(7,2)">🔥</span>
 </div>
   <div class="value">0</div>
@@ -479,7 +505,13 @@ data.forEach(row => {
 
   const flames = counter.querySelectorAll(".flame");
 
-  if (flames[0]) flames[0].classList.toggle("active", row.flame1);
+  if (flames[0]) {
+  if (row.flame1) {
+    flames[0].style.opacity = "1";
+  } else {
+    flames[0].style.opacity = "0.3";
+  }
+}
   if (flames[1]) flames[1].classList.toggle("active", row.flame2);
 });
 
