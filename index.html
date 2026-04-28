@@ -84,6 +84,7 @@ button:disabled {
 .orange { background: #FF9800; }
 .pink   { background: #ff00ff;}
 .darkblue { background: #1201fd;}
+.greenblue { background: #00ffea;}
 
 .Überschrift{
 font-size: 3vh;
@@ -331,7 +332,7 @@ font-size: 3vh;
 
 <div class="counter purple" data-id="5">
   <div class="Überschrift">
-  <span class="Überschrift">Wald</span>
+  <span class="Überschrift">Theater</span>
   </div><div class="flames">
   
   <span class="flame plus" onclick="toggleFlame(5,1)">🔄</span>
@@ -346,7 +347,7 @@ font-size: 3vh;
 
 <div class="counter orange" data-id="6">
   <div class="Überschrift">
-  <span class="Überschrift">Markt</span>
+  <span class="Überschrift">Wald</span>
   </div>
   <div class="flames">
   <span class="flame plus" onclick="toggleFlame(6,1)">🔄</span>
@@ -358,9 +359,10 @@ font-size: 3vh;
     <button onclick="change(6,-1)">-</button>
    </div> 
   </div>
+
   <div class="counter darkblue" data-id="7">
   <div class="Überschrift">
-  <span class="Überschrift">Hof</span>
+  <span class="Überschrift">Markt</span>
   </div><div class="flames">
   
   <span class="flame plus" onclick="toggleFlame(7,1)">🔄</span>
@@ -372,8 +374,22 @@ font-size: 3vh;
     <button onclick="change(7,-1)">-</button>
   </div> 
   </div>
+  <div class="counter greenblue" data-id="8">
+  <div class="Überschrift">
+  <span class="Überschrift">Hof</span>
+  </div><div class="flames">
+  
+  <span class="flame plus" onclick="toggleFlame(8,1)">🔄</span>
+  <span class="flame" onclick="toggleFlame(8,2)">🔥</span>
+</div>
+  <div class="value">0</div>
+  <div>
+    <button onclick="change(8,1)">+</button>
+    <button onclick="change(8,-1)">-</button>
+  </div> 
+  </div>
   <div id="chat">
-
+  
   <div id="messages"></div>
 
   <div id="chatInput">
