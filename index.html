@@ -20,7 +20,7 @@ body {
   background: #1e1e1e;
   padding: 2px;
   display: flex;
-  gap: 20px;
+  gap: 30px;
   align-items: center;
 }
 #totalSum {
@@ -30,7 +30,7 @@ body {
 }
 
 #refreshBtn {
-  padding: 10px 20px;
+  padding: 1px 10px;
   border: none;
   border-radius: 10px;
   background: #2196f3;
@@ -39,10 +39,285 @@ body {
 }
 
 #dot {
-  width: 10px;
-  height: 10px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   background: gray;
+}
+
+/* ===================================
+   BURNING EFFECT
+=================================== */
+
+.counter {
+  position: relative;
+  overflow: hidden;
+}
+
+.counter.burning::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: inherit;
+
+  /* 🔥 stärkerer Kontrast-Rahmen */
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,1),
+    inset 0 0 10px rgba(255,255,255,0.9),
+    inset 0 0 25px rgba(255,140,0,0.9),
+    inset 0 0 50px rgba(255,60,0,0.8),
+    inset 0 0 80px rgba(255,0,0,0.7);
+
+  /* 🔲 dunkler Kontrast-Halo (wichtig für GELB!) */
+  outline: 2px solid rgba(0,0,0,0.35);
+
+  background: radial-gradient(
+    circle at center,
+    rgba(255,255,255,0.25),
+    rgba(255,140,0,0.18),
+    transparent 70%
+  );
+
+  animation: innerBorderBlink 0.15s infinite alternate;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* 🔥 zusätzlicher Außen-Kontrast für helle Felder */
+.counter.burning {
+  box-shadow:
+    inset 0 0 25px rgba(255,255,255,0.4),
+    inset 0 0 60px rgba(255,140,0,0.6),
+    inset 0 0 100px rgba(255,0,0,0.4),
+
+    /* wichtig: dunkler Outline-Glow */
+    0 0 0 2px rgba(0,0,0,0.35),
+    0 0 10px rgba(0,0,0,0.4);
+}
+/* 🔥 EXTREMER INNERER FLAMMENRAHMEN */
+.counter.burning {
+  position: relative;
+  overflow: hidden;
+
+  animation: burnFlicker 0.25s infinite alternate;
+}
+
+/* 🔥 INNERER BLINKENDER RAHMEN */
+.counter.burning::before {
+  content: "";
+  position: absolute;
+  inset: 3px; /* innen im Feld */
+  border-radius: inherit;
+
+  /* 🌈 blinkender Feuer-Rahmen */
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,0.8),
+    inset 0 0 10px rgba(255,200,0,0.8),
+    inset 0 0 25px rgba(255,80,0,0.7),
+    inset 0 0 45px rgba(255,0,0,0.5);
+
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(255,255,255,0.15),
+    rgba(255,120,0,0.15),
+    transparent 70%
+  );
+
+  animation: innerBorderBlink 0.18s infinite alternate;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Inhalt bleibt darüber */
+.counter > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* ⚡ schneller Blink-Glow (innen!) */
+@keyframes innerBorderBlink {
+  0% {
+    opacity: 0.4;
+    filter: brightness(1);
+    box-shadow:
+      inset 0 0 0 2px rgba(255,255,255,0.6),
+      inset 0 0 10px rgba(255,150,0,0.5),
+      inset 0 0 20px rgba(255,50,0,0.4);
+  }
+
+  100% {
+    opacity: 1;
+    filter: brightness(1.8);
+    box-shadow:
+      inset 0 0 0 2px rgba(255,255,255,1),
+      inset 0 0 20px rgba(255,220,0,0.9),
+      inset 0 0 40px rgba(255,80,0,0.8),
+      inset 0 0 70px rgba(255,0,0,0.6);
+  }
+}
+
+/* 🔥 leichtes Flackern der ganzen Kachel */
+@keyframes burnFlicker {
+  0% { filter: brightness(1); }
+  100% { filter: brightness(1.25); }
+}
+
+/* 🔥 Pulsieren OHNE Größenänderung */
+@keyframes innerPulse {
+
+  0% {
+    filter: brightness(1);
+  }
+
+  100% {
+    filter: brightness(1.35);
+  }
+}
+/* ===================================
+   SUPPORT / HILFSBEREITSCHAFT
+=================================== */
+
+.counter.supporting {
+  position: relative;
+  overflow: hidden;
+
+  box-shadow:
+    inset 0 0 15px rgba(255,255,255,0.2),
+    inset 0 0 35px rgba(0,200,255,0.25),
+    inset 0 0 60px rgba(0,120,255,0.2);
+
+  animation: supportPulse 1.5s infinite alternate;
+}
+
+/* 💙 ruhige Energiewelle */
+.counter.supporting::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  background:
+    radial-gradient(circle at center,
+      rgba(255,255,255,0.18) 0%,
+      rgba(0,255,255,0.12) 30%,
+      rgba(0,120,255,0.12) 55%,
+      transparent 80%);
+
+  animation: supportGlow 2s infinite alternate;
+
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Inhalt sichtbar */
+.counter.supporting > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* ✨ sanftes Pulsieren */
+@keyframes supportPulse {
+
+  0% {
+    filter: brightness(1);
+  }
+
+  100% {
+    filter: brightness(1.15);
+  }
+}
+
+/* 💙 Glow */
+@keyframes supportGlow {
+
+  0% {
+    opacity: 0.4;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+/* ===================================
+   SUPPORT RAINBOW BORDER
+=================================== */
+
+.counter.supporting {
+  position: relative;
+  overflow: hidden;
+}
+
+/* 🌈 Leuchtender Regenbogenrahmen */
+.counter.supporting::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  border-radius: 400px;
+
+  padding: 300px;
+
+  background: linear-gradient(
+    90deg,
+    #ff0000,
+    #ff9900,
+    #ffee00,
+    #33ff00,
+    #00ffee,
+    #0066ff,
+    #aa00ff,
+    #ff0000
+  );
+
+  background-size: 500% 500%;
+
+  animation:
+    rainbowMove 20s linear infinite,
+    rainbowGlow 20.2s infinite alternate;
+
+  /* 🔥 nur Rahmen sichtbar */
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Inhalt über Rahmen */
+.counter.supporting > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* 🌈 Farbwechsel */
+@keyframes rainbowMove {
+
+  0% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+/* ✨ Leuchten */
+@keyframes rainbowGlow {
+
+  0% {
+    filter: brightness(1)
+            drop-shadow(0 0 20px rgba(255,255,255,0.4))
+            drop-shadow(0 0 20px rgba(0,255,255,0.3));
+  }
+
+  100% {
+    filter: brightness(1.5)
+            drop-shadow(0 0 20px rgba(255,255,255,0.9))
+            drop-shadow(0 0 40px rgba(0,255,255,0.7));
+  }
 }
 
 #grid {
@@ -92,7 +367,7 @@ font-size: 2vh;
 .flames {
   margin-top: 10px;
   display: flex;
-  gap: 10px;
+  gap: 30px;
 
   /* 🔲 BOX */
   background: rgba(0, 0, 0, 0.55);
@@ -172,7 +447,7 @@ font-size: 2vh;
 .msg {
   margin-bottom: 1px;
   padding: 1px 1px;
-  background: rgba(255,255,255,0.1);
+  background: rgb(0, 0, 0);
   border-radius: 8px;
 }
 
@@ -530,6 +805,8 @@ data.forEach(row => {
   }
 }
   if (flames[1]) flames[1].classList.toggle("active", row.flame2);
+      counter.classList.toggle("burning", row.flame2);
+      counter.classList.toggle("supporting", row.flame1);
 });
 
 
@@ -620,6 +897,8 @@ if (counter) {
 
   flames[0].classList.toggle("active", row.flame1);
   flames[1].classList.toggle("active", row.flame2);
+  counter.classList.toggle("burning", row.flame2);
+  counter.classList.toggle("supporting", row.flame1);
 }
 
       lastSync = Date.now();
