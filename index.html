@@ -84,7 +84,7 @@ body.limitReached #limitOverlay {
   position: absolute;
   top: 10vh;
   left: 2vw;
-  padding: 4vh 4vw;
+  padding: 2vh 2vw;
   border: none;
   border-radius: 200px;
   background: #2196f3;
@@ -115,6 +115,56 @@ body.closed #openBtn {
   background: #f44336;
 }
 
+/* ================= Statusbutton ================= */
+#statusPanel {
+  position: fixed;
+  top: 25vh;
+  left: 2vw;
+
+  width: 200px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  z-index: 10;
+}
+
+.statusBtn {
+  width: 100%;
+
+  font-size: 20px;
+
+  padding: 1px;
+
+  border-radius: 25px;
+
+  background: rgba(255, 255, 255, 0.67);
+
+  color: Black;
+
+  backdrop-filter: blur(15px);
+
+  box-shadow: 0 0 15px rgba(0,150,255,0.4);
+}
+
+.statusGroups {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 8px;
+
+  min-height: 30px;
+}
+
+.statusBubble {
+  width: 20px;
+  height: 20px;
+
+  border-radius: 50%;
+
+  border: 2px solid white;
+}
 
 /* ================= MAX ================= */
 #maxContainer {
@@ -298,7 +348,27 @@ button {
 
 <button id="refreshBtn">↻</button>
 <button id="openBtn">OFFEN</button>
+<div id="statusPanel">
 
+  <button class="statusBtn" id="readyBtn">
+    🍔 Essenswunsch
+  </button>
+
+  <div class="statusGroups" id="readyGroups"></div>
+
+  <button class="statusBtn" id="paymentBtn">
+    ⏳ später essen
+  </button>
+
+  <div class="statusGroups" id="paymentGroups"></div>
+
+  <button class="statusBtn" id="freeBtn">
+    🧹 Raum leer 
+  </button>
+
+  <div class="statusGroups" id="freeGroups"></div>
+
+</div>
 
 
 <!-- MAX -->
@@ -425,7 +495,23 @@ dots.forEach(d => {
 function checkLimit() {
   document.body.classList.toggle("limitReached", count >= maxValue);
 }
+function renderGroups(id, groups) {
 
+  const container = document.getElementById(id);
+
+  container.innerHTML = "";
+
+  groups.forEach(color => {
+
+    const bubble = document.createElement("div");
+
+    bubble.className = "statusBubble";
+
+    bubble.style.background = color;
+
+    container.appendChild(bubble);
+  });
+}
 
 /* ================= LOG ================= */
 function addLog(delta, color) {
@@ -510,6 +596,10 @@ async function load() {
   count = data.value;
   maxValue = data.max_value ?? 10;
 
+renderGroups("readyGroups", data.ready_groups || []);
+renderGroups("paymentGroups", data.payment_groups || []);
+renderGroups("freeGroups", data.free_groups || []);
+
   document.getElementById("count").innerText = count;
   document.getElementById("maxValue").innerText = maxValue;
 
@@ -543,6 +633,34 @@ await supabase
   .eq("id", 1);
 }
 
+/* ================= Statusbutton ================= */
+
+async function toggleGroup(column) {
+
+  const { data } = await supabase
+    .from("counter")
+    .select(column)
+    .eq("id", 1)
+    .single();
+
+  let groups = data[column] || [];
+
+  if (groups.includes(localColor)) {
+
+    groups = groups.filter(c => c !== localColor);
+
+  } else {
+
+    groups.push(localColor);
+  }
+
+  await supabase
+    .from("counter")
+    .update({
+      [column]: groups
+    })
+    .eq("id", 1);
+}
 /* ================= MAX (FIXED) ================= */
 async function updateMax(delta) {
 
@@ -573,6 +691,15 @@ document.getElementById("minus").onclick = () => update(-1);
 document.getElementById("maxPlus").onclick = () => updateMax(1);
 document.getElementById("maxMinus").onclick = () => updateMax(-1);
 
+document.getElementById("readyBtn").onclick =
+  () => toggleGroup("ready_groups");
+
+document.getElementById("paymentBtn").onclick =
+  () => toggleGroup("payment_groups");
+
+document.getElementById("freeBtn").onclick =
+  () => toggleGroup("free_groups");
+
 let isOpen = false;
 
 function updateOpenUI() {
@@ -593,21 +720,46 @@ supabase.channel("counter-live")
     setSync("online");
 
     const d = payload.new;
+
+    renderGroups("readyGroups", d.ready_groups || []);
+renderGroups("paymentGroups", d.payment_groups || []);
+renderGroups("freeGroups", d.free_groups || []);
     
-    isOpen = d.is_open ?? false;
+isOpen = d.is_open ?? false;
 updateOpenUI();
 
-    count = d.value;
-    maxValue = d.max_value ?? 10;
+/* ALTEN WERT MERKEN */
+const oldCount = count;
 
-    document.getElementById("count").innerText = count;
-    document.getElementById("maxValue").innerText = maxValue;
+/* UI */
+document.getElementById("count").innerText = d.value;
+document.getElementById("maxValue").innerText = d.max_value ?? 10;
 
-    checkLimit();
+/* LOG NUR WENN SICH COUNT ÄNDERT */
+if (oldCount !== d.value) {
 
-    if (d.last_delta !== null && d.last_delta !== 0) {
-      addLog(d.last_delta, d.last_color);
-    }
+  if (d.last_delta !== null && d.last_delta !== 0) {
+
+    addLog(d.last_delta, d.last_color);
+  }
+}
+
+/* NEUE WERTE SPEICHERN */
+count = d.value;
+maxValue = d.max_value ?? 10;
+
+checkLimit();
+
+if (count !== d.value) {
+
+  if (d.last_delta !== null && d.last_delta !== 0) {
+
+    addLog(d.last_delta, d.last_color);
+  }
+}
+
+count = d.value;
+maxValue = d.max_value ?? 10;
 
 triggerSound();
   })
