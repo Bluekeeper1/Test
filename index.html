@@ -641,11 +641,18 @@ dots.forEach(d => {
 function checkLimit() {
   document.body.classList.toggle("limitReached", count >= maxValue);
 }
-function renderGroups(id, groups) {
+function renderGroups(id, groups = []) {
 
   const container = document.getElementById(id);
 
+  if (!container) {
+    console.error("Container fehlt:", id);
+    return;
+  }
+
   container.innerHTML = "";
+
+  if (!Array.isArray(groups)) return;
 
   groups.forEach(color => {
 
