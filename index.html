@@ -744,17 +744,9 @@ document.getElementById("count").innerText = d.value;
 document.getElementById("maxValue").innerText = d.max_value ?? 10;
 
 /* LOG NUR WENN SICH COUNT ÄNDERT */
-const oldCount = count;
-
-/* UI */
-document.getElementById("count").innerText = d.value;
-document.getElementById("maxValue").innerText = d.max_value ?? 10;
-
-/* LOG NUR WENN SICH COUNT ÄNDERT */
 if (oldCount !== d.value) {
 
   if (d.last_delta !== null && d.last_delta !== 0) {
-
     addLog(d.last_delta, d.last_color);
   }
 }
