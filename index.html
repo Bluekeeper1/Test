@@ -234,7 +234,7 @@ button {
   /* GLOW */
   box-shadow: 0 0 25px rgba(0, 150, 255, 0.4);
 
-  z-index: 1;
+  z-index: -1;
 }
 
 #plus { background: #4caf50; }
@@ -392,12 +392,162 @@ button {
 
 
 <!-- BUTTONS -->
+<div id="buttons">
+  <button id="plus">+</button>
+  <button id="minus">-</button>
+</div>
+
+<div id="buttonContainer">
+  <div id="buttons">
+    
+  </div>
+</div>
+
+id="buttons" darf nur EINMAL existieren.
+
+Mach daraus:
+
 <div id="buttonContainer">
   <div id="buttons">
     <button id="plus">+</button>
     <button id="minus">-</button>
   </div>
 </div>
+
+und lösche den ersten #buttons Block komplett.
+
+Fix 3 (optional aber sinnvoll)
+
+Dein #buttonContainer liegt eventuell über den Buttons selbst.
+
+Füge hinzu:
+
+#buttons {
+  position: relative;
+  z-index: 2;
+}
+Danach funktioniert:
++
+-
+Max Buttons
+Status Buttons
+Open Button
+
+wieder korrekt.
+
+Der Hauptfehler ist fast sicher:
+
+z-index: -1;
+
+beim #buttonContainer.
+
+das war nicht der fehler ich kann gestern ging auch alles noch
+
+Dann ist es sehr wahrscheinlich kein CSS-/z-index-Problem, sondern dein JavaScript bricht komplett ab — dadurch werden die onclick-Handler nie registriert.
+
+Der kritischste Kandidat ist:
+
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+Wenn das CDN langsam/down ist oder Supabase nicht lädt, stoppt das gesamte Script sofort → alle Buttons wirken „tot“.
+
+Prüfe sofort die Konsole
+
+Drücke:
+
+F12
+→ „Console“
+
+Du wirst vermutlich einen roten Fehler sehen wie:
+
+Failed to fetch dynamically imported module
+
+oder:
+
+createClient is not defined
+
+oder:
+
+TypeError ...
+Wahrscheinlichster echter Fehler
+
+Du benutzt:
+
+<script type="module">
+
+Wenn auch nur EIN Fehler im Modul passiert, läuft danach GAR NICHTS mehr.
+
+Sofort-Fix
+1. Supabase Import ersetzen
+
+Ersetze:
+
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
+
+mit:
+
+import { createClient } from 'https://esm.sh/@supabase/supabase-js'
+
+Das ist deutlich stabiler.
+
+Zweiter möglicher Fehler
+
+Falls click.mp3 fehlt:
+
+<audio id="counterSound" src="click.mp3">
+
+kann Safari/iPad teilweise das komplette Audio-Objekt killen.
+
+Teste kurz:
+
+<!-- audio testweise entfernen -->
+
+oder:
+
+let audio = document.getElementById("counterSound");
+
+if (!audio) {
+  console.log("kein audio");
+}
+Noch ein echter Bug in deinem Code
+
+Hier:
+
+if (count !== d.value) {
+
+  if (d.last_delta !== null && d.last_delta !== 0) {
+
+    addLog(d.last_delta, d.last_color);
+  }
+}
+
+count = d.value;
+maxValue = d.max_value ?? 10;
+
+checkLimit();
+
+if (count !== d.value) {
+
+Der zweite Block ist logisch kaputt, weil count bereits gesetzt wurde.
+
+Das zerstört zwar nicht die Buttons, zeigt aber dass evtl. beim Editieren etwas beschädigt wurde.
+
+Mein Verdacht in Reihenfolge
+Supabase Import lädt nicht
+JS Runtime Error stoppt alles
+Audio Problem
+Browser cached altes kaputtes Modul
+Schnelltest
+
+Füge GANZ OBEN im Script ein:
+
+console.log("SCRIPT START");
+
+und direkt danach:
+
+alert("läuft");
+
+Wenn kein Alert kommt → Script startet gar nicht → Import/CDN Problem.
   
 <!-- COLORS -->
 <div id="colorPicker">
