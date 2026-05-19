@@ -403,41 +403,6 @@ button {
   </div>
 </div>
 
-id="buttons" darf nur EINMAL existieren.
-
-Mach daraus:
-
-<div id="buttonContainer">
-  <div id="buttons">
-    <button id="plus">+</button>
-    <button id="minus">-</button>
-  </div>
-</div>
-
-und lösche den ersten #buttons Block komplett.
-
-Fix 3 (optional aber sinnvoll)
-
-Dein #buttonContainer liegt eventuell über den Buttons selbst.
-
-Füge hinzu:
-
-#buttons {
-  position: relative;
-  z-index: 2;
-}
-Danach funktioniert:
-+
--
-Max Buttons
-Status Buttons
-Open Button
-
-wieder korrekt.
-
-Der Hauptfehler ist fast sicher:
-
-z-index: -1;
   
 <!-- COLORS -->
 <div id="colorPicker">
