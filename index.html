@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Restaurant </title>
+<title>Gruppenzähler</title>
 
 <style>
 body {
@@ -11,433 +11,593 @@ body {
   font-family: sans-serif;
   background: #111;
   color: white;
-  overflow: hidden;
-  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100vh;
 }
 
-/* ================= TOP COLOR BAR ================= */
-#topBar {
-  position: fixed;
-  bottom: 0;
-  right: 0px;
-  width: 100%;
-  height: 30vh;
-  z-index: -3;
-  pointer-events: none;
-  transition: background 0.3s ease;
-}
-/* ================= TOP COLOR BAR ================= */
-#rightbar {
-  position: fixed;
-  bottom: 0;
-  right: 5px;
-  width: 100%;
-  height: 20vh;
-  z-index: -3;
-  pointer-events: none;
-  transition: background 0.3s ease;
-}
-/* ================= LIMIT OVERLAY ================= */
-#limitOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(183, 28, 28, 0);
-  z-index: -5;
-  pointer-events: none;
-  transition: background 0.3s ease;
-}
-
-body.limitReached #limitOverlay {
-  background: rgb(218, 0, 0);
-}
-
-/* ================= SYNC ================= */
-#syncStatus {
-  position: absolute;
-  top: 2vh;
-  left: 2vw;
+#topbar {
+  background: #1e1e1e;
+  padding: 2px;
   display: flex;
+  gap: 30px;
   align-items: center;
-  gap: 10px;
+}
+#totalSum {
+  font-weight: bold;
+  color: white;
+  margin-left: 50px;
 }
 
-#dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: gray;
-}
-
-/* ================= LAST UPDATE ================= */
-#lastUpdate {
-  position: absolute;
-  top: 6vh;
-  left: 2vw;
-  opacity: 0.7;
-}
-
-/* ================= REFRESH ================= */
 #refreshBtn {
-  position: absolute;
-  top: 10vh;
-  left: 2vw;
-  padding: 2vh 2vw;
+  padding: 1px 10px;
   border: none;
-  border-radius: 200px;
+  border-radius: 10px;
   background: #2196f3;
   color: white;
   cursor: pointer;
 }
 
-#refreshBtn:disabled {
-  opacity: 0.4;
+#dot {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: gray;
 }
 
-#openBtn {
+/* ===================================
+   BURNING EFFECT
+=================================== */
+
+.counter {
+  position: relative;
+  overflow: hidden;
+}
+
+.counter.burning::before {
+  content: "";
   position: absolute;
-  top: 2vh;
-  left: 50%;
-  transform: translateX(-50%);
+  inset: 3px;
+  border-radius: inherit;
 
-  padding: 4vh 4vw;
-  border: none;
-  border-radius: 200px;
-  background: #4caf50;
-  color: white;
-  cursor: pointer;
-  font-size: 20px;
+  /* 🔥 stärkerer Kontrast-Rahmen */
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,1),
+    inset 0 0 10px rgba(255,255,255,0.9),
+    inset 0 0 25px rgba(255,140,0,0.9),
+    inset 0 0 50px rgba(255,60,0,0.8),
+    inset 0 0 80px rgba(255,0,0,0.7);
+
+  /* 🔲 dunkler Kontrast-Halo (wichtig für GELB!) */
+  outline: 2px solid rgba(0,0,0,0.35);
+
+  background: radial-gradient(
+    circle at center,
+    rgba(255,255,255,0.25),
+    rgba(255,140,0,0.18),
+    transparent 70%
+  );
+
+  animation: innerBorderBlink 0.15s infinite alternate;
+  pointer-events: none;
+  z-index: 1;
 }
 
-body.closed #openBtn {
-  background: #f44336;
+/* 🔥 zusätzlicher Außen-Kontrast für helle Felder */
+.counter.burning {
+  box-shadow:
+    inset 0 0 25px rgba(255,255,255,0.4),
+    inset 0 0 60px rgba(255,140,0,0.6),
+    inset 0 0 100px rgba(255,0,0,0.4),
+
+    /* wichtig: dunkler Outline-Glow */
+    0 0 0 2px rgba(0,0,0,0.35),
+    0 0 10px rgba(0,0,0,0.4);
+}
+/* 🔥 EXTREMER INNERER FLAMMENRAHMEN */
+.counter.burning {
+  position: relative;
+  overflow: hidden;
+
+  animation: burnFlicker 0.25s infinite alternate;
 }
 
-/* ================= Statusbutton ================= */
-#statusPanel {
-  position: fixed;
-  top: 25vh;
-  left: 2vw;
+/* 🔥 INNERER BLINKENDER RAHMEN */
+.counter.burning::before {
+  content: "";
+  position: absolute;
+  inset: 3px; /* innen im Feld */
+  border-radius: inherit;
 
-  width: 200px;
+  /* 🌈 blinkender Feuer-Rahmen */
+  box-shadow:
+    inset 0 0 0 2px rgba(255,255,255,0.8),
+    inset 0 0 10px rgba(255,200,0,0.8),
+    inset 0 0 25px rgba(255,80,0,0.7),
+    inset 0 0 45px rgba(255,0,0,0.5);
 
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(255,255,255,0.15),
+    rgba(255,120,0,0.15),
+    transparent 70%
+  );
+
+  animation: innerBorderBlink 0.18s infinite alternate;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Inhalt bleibt darüber */
+.counter > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* ⚡ schneller Blink-Glow (innen!) */
+@keyframes innerBorderBlink {
+  0% {
+    opacity: 0.4;
+    filter: brightness(1);
+    box-shadow:
+      inset 0 0 0 2px rgba(255,255,255,0.6),
+      inset 0 0 10px rgba(255,150,0,0.5),
+      inset 0 0 20px rgba(255,50,0,0.4);
+  }
+
+  100% {
+    opacity: 1;
+    filter: brightness(1.8);
+    box-shadow:
+      inset 0 0 0 2px rgba(255,255,255,1),
+      inset 0 0 20px rgba(255,220,0,0.9),
+      inset 0 0 40px rgba(255,80,0,0.8),
+      inset 0 0 70px rgba(255,0,0,0.6);
+  }
+}
+
+/* 🔥 leichtes Flackern der ganzen Kachel */
+@keyframes burnFlicker {
+  0% { filter: brightness(1); }
+  100% { filter: brightness(1.25); }
+}
+
+/* 🔥 Pulsieren OHNE Größenänderung */
+@keyframes innerPulse {
+
+  0% {
+    filter: brightness(1);
+  }
+
+  100% {
+    filter: brightness(1.35);
+  }
+}
+
+#grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+}
+
+.counter {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-
-  z-index: 10;
-}
-
-.statusBtn {
-  width: 100%;
-
-  font-size: 20px;
-
-  padding: 1px;
-
-  border-radius: 25px;
-
-  background: rgba(255, 255, 255, 0.67);
-
-  color: Black;
-
-  backdrop-filter: blur(15px);
-
-  box-shadow: 0 0 15px rgba(0,150,255,0.4);
-}
-
-.statusGroups {
-  display: flex;
-  flex-wrap: wrap;
-
-  gap: 8px;
-
-  min-height: 30px;
-}
-
-.statusBubble {
-  width: 20px;
-  height: 20px;
-
-  border-radius: 50%;
-
-  border: 2px solid white;
-}
-
-/* ================= MAX ================= */
-#maxContainer {
-  position: absolute;
-  top: 2vh;
-  right: 2vw;
-  background: rgb(0,153,255);
-  border-radius: 12px;
-  padding: 1vh 1vw;
-  text-align: center;
-}
-
-#maxValue {
-  font-size: 30px;
-}
-
-#maxButtons button {
-  margin: 1px;
-  border: none;
-  padding: 4px 10px;
-  border-radius: 6px;
-  color: white;
-  cursor: pointer;
-}
-
-#maxPlus { background: #4caf50; }
-#maxMinus { background: #f44336; }
-
-/* ================= COUNTER ================= */
-#count {
-  display: flex;
   justify-content: center;
   align-items: center;
-  height: 70vh;
-  font-size: clamp(150px, 100vmin, 200px);
+  font-size: 20px;
+  font-weight: bold;
 }
 
-/* ================= BUTTONS ================= */
-#buttons {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-}
+.value { font-size: 100px; }
 
 button {
-  font-size: 60px;
-  padding: 20px 90px;
-  border: none;
-  border-radius: 60px;
-  color: white;
+  font-size: 40px;
+  padding: 5px 10px;
+  border: 1;
+  border-radius: 20px;
   cursor: pointer;
-}
-#buttonContainer {
-  position: absolute;
-  top: 69vh;
-  left: 50%;
-  transform: translateX(-50%);
-
-  padding: 64px 220px;
-
-  border-radius: 40px;
-
-  /* GLASS LOOK */
-  background: rgba(0, 0, 0, 0.92);
-  backdrop-filter: blur(15px);
-
-  /* GLOW */
-  box-shadow: 0 0 25px rgba(0, 150, 255, 0.4);
-
-  z-index: -1;
+  margin: 0px;
 }
 
-#plus { background: #4caf50; }
-#minus { background: #f44336; }
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
-/* ================= COLORS ================= */
-#colorPicker {
-  position: fixed;
-  bottom: 1vh;
-  left: 50%;
-  transform: translateX(-50%);
+.green { background: #4CAF50; }
+.red { background: #fc483b; }
+.blue { background: #2196F3; }
+.yellow { background: #FFEB3B; color:black; }
+.purple { background: #9C27B0; }
+.orange { background: #FF9800; }
+.pink   { background: #ff00ff;}
+.darkblue { background: #1201fd;}
+.greenblue { background: #00ffea;color:black;}
+
+.Überschrift{
+font-size: 2vh;
+}
+.flames {
+  margin-top: 10px;
   display: flex;
-  gap: 12px;
+  gap: 30px;
+
+  /* 🔲 BOX */
+  background: rgba(0, 0, 0, 0.55);
+  padding: 0px 0px;
+  border-radius: 12px;
+
+  /* optional Glass Effekt */
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.64);
+}
+.flame.warning {
+    opacity: 0.25;
+    transition: .2s;
 }
 
-.colorDot {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
-  border: 2px solid white;
+.flame.warning.active {
+    opacity: 1;
+    animation:
+        warningPulse 1.2s ease-in-out infinite,
+        warningBlink 1s infinite;
+    text-shadow:
+        0 0 10px yellow,
+        0 0 20px orange,
+        0 0 30px red;
+}
+
+@keyframes warningPulse {
+    0%,100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.35);
+    }
+}
+
+@keyframes warningBlink {
+    0%,100% {
+        filter: brightness(1);
+    }
+    50% {
+        filter: brightness(2);
+    }
+}
+
+/* 🔥 einzelne Flammen */
+.flame {
+  font-size: 30px;
+  opacity: 0.3;
   cursor: pointer;
   transition: 0.2s;
 }
 
-.colorDot.active {
-  transform: scale(1.25);
-  box-shadow: 0 0 10px white;
+/* aktive Flamme */
+.flame.active {
+  opacity: 1;
+  animation: flameFlicker 0.4s infinite alternate;
 }
 
-/* ================= LOG (RIGHT NEXT TO NUMBER) ================= */
+/* ✨ wenn mindestens eine aktiv → Box glow */
+.flames.active-box {
+  box-shadow: 0 0 15px rgba(255, 119, 0, 0.81);
+}
 
-
-#log {
-  width: 90%;
-  height: 85%;
-
+/* 🔥 Animation */
+@keyframes flameFlicker {
+  0% {
+    transform: scale(1) rotate(-2deg);
+    text-shadow: 
+      0 0 5px #ff9800,
+      0 0 10px #ff5722,
+      0 0 20px #ff0000;
+  }
+  50% {
+    transform: scale(1.1) rotate(2deg);
+    text-shadow: 
+      0 0 10px #ffc107,
+      0 0 20px #ff9800,
+      0 0 30px #ff5722;
+  }
+  100% {
+    transform: scale(0.95) rotate(-1deg);
+    text-shadow: 
+      0 0 8px #ff9800,
+      0 0 15px #ff5722,
+      0 0 25px #ff0000;
+  }
+  
+}
+#chat {
+  position: fixed;
+  bottom: 10px;
+  right: 1px;
+  width: 250px;
+  height: 250px;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
   display: flex;
   flex-direction: column;
-
-  justify-content: flex-start; /* 👈 START OBEN */
-  align-items: flex-start;
-
-  gap: 10px;
-
-  overflow-y: auto; /* falls zu viele Logs */
-  overflow-x: hidden;
-
-  padding-top: 0px;
-}
-.logEntry {
-  display: flex;
-  flex-direction: row;
-  align-items: center;   /* 👈 DAS ist der entscheidende Fix */
-
-  justify-content: center;
-  gap: 0px;
-
-  white-space: nowrap;
+  overflow: hidden;
 }
 
-#logContainer {
-  position: fixed;
-  top: 22vh;
-  right: 2vw;          /* stabil statt left:85% */
-  
-  width: 100px;        /* feste, saubere Größe */
-  height: 42vh;
+#messages {
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  font-size: 18px;
+}
 
-  border-radius: 40px;
+.msg {
+  margin-bottom: 1px;
+  padding: 1px 1px;
+  background: rgb(0, 0, 0);
+  border-radius: 8px;
+}
 
-  background: rgba(0, 0, 0, 0.92);
-  backdrop-filter: blur(15px);
-
-  box-shadow: 0 0 25px rgba(0, 150, 255, 0.4);
-
-  z-index: 5;
-
+#chatInput {
   display: flex;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+#chatInput input {
+  flex: 1;
+  border: none;
+  padding: 1px 5px;
+  font-size: 12px;
+  height: 22px;
+  background: transparent;
+  color: white;
+}
+
+#chatInput button {
+  padding: 1px 8px;
+  font-size: 19px;
+}
+#colorPicker {
+  display: flex;
+  gap: 16px;
+  padding: 10px 30px;
   justify-content: center;
+  border-bottom: 10px solid rgba(255,255,255,0.1);
+}
+
+#colorPicker span {
+  cursor: pointer;
+  font-size: 25px;
+  opacity: 0.5;
+  transition: 0.2s;
+}
+
+#colorPicker span:hover {
+  opacity: 1;
+  transform: scale(1.2);
+}
+#colorPicker span.active {
+  opacity: 1;
+  transform: scale(2.8);
+  text-shadow: 0 0 10px currentColor;
+}
+.msg {
+  display: flex;
   align-items: center;
 }
 
+/* ✨ ruhiges Pulsieren */
+@keyframes plusPulse {
+  0% {
+    transform: scale(2) rotate(20deg);
+  }
 
-  .colorBubble {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-
-  flex-shrink: 0;   /* 🔥 verhindert Zusammendrücken */
-  aspect-ratio: 1 / 1; /* extra Sicherheit für perfekte Rundheit */
+  100% {
+    transform: scale(3) rotate(20deg);
+  }
 }
 
+.flame.plus {
+  color: #ffffff;
+  opacity: 0.25;
+  transition: 0.2s;
+}
 
+.flame.plus.active {
+  opacity: 1;
+  filter: brightness(1.2);
+  text-shadow:
+      0 0 10px #00f729,
+      0 0 20px #48ff00,
+      0 0 35px #00ff0d,
+      0 0 55px #6cf72b;
+  animation: plusPulse 10000s infinite alternate;
+}
 </style>
 </head>
 
 <body>
-  <audio id="counterSound" src="click.mp3" preload="auto"></audio>
 
-<div id="topBar"></div>
-<div id="limitOverlay"></div>
+<audio id="sound" src="click.mp3" preload="auto"></audio>
+<audio id="sound" src="Alarm.mp3" preload="auto"></audio>
 
-
-<!-- SYNC -->
-<div id="syncStatus">
+<div id="topbar">
+  <button id="refreshBtn">↻</button>
   <div id="dot"></div>
-  <span id="syncText">connecting...</span>
+  <span id="status">connecting...</span>
+  <span id="syncTime">sync: nie</span>
+
+  <span id="totalSum"> Gesamt: 0</span>
 </div>
 
-<div id="lastUpdate">letztes update: nie</div>
-
-<button id="refreshBtn">↻</button>
-<button id="openBtn">OFFEN</button>
-<div id="statusPanel">
-
-  <button class="statusBtn" id="readyBtn">
-    🍔 Essenswunsch
-  </button>
-
-  <div class="statusGroups" id="readyGroups"></div>
-
-  <button class="statusBtn" id="paymentBtn">
-    ⏳ später essen
-  </button>
-
-  <div class="statusGroups" id="paymentGroups"></div>
-
-  <button class="statusBtn" id="freeBtn">
-    🧹 Raum leer 
-  </button>
-
-  <div class="statusGroups" id="freeGroups"></div>
-
+<div id="grid">
+<div class="counter green" data-id="1">
+  <div class="Überschrift">
+  <span class="Überschrift">Bauraum</span>
+  </div> 
+<div class="flames">
+  <span class="flame plus" onclick="toggleFlame(1,1)">✅</span>
+  <span class="flame warning" onclick="toggleFlame(1,2)">⚠️</span>
+  <span class="flame" onclick="toggleFlame(1,3)">🔥</span>
 </div>
-
-
-<!-- MAX -->
-<div id="maxContainer">
-  <div>Max</div>
-  <div id="maxValue">10</div>
-  <div id="maxButtons">
-    <button id="maxPlus">+</button>
-    <button id="maxMinus">-</button>
+  <div class="value">0</div>
+  <div>
+    <button onclick="change(1,1)">+</button>
+    <button onclick="change(1,-1)">-</button>
   </div>
-</div>
-
-
-<!-- LOG -->
-<div id="logContainer">
-  <div id="log"></div>
-</div>
-
-<!-- COUNTER -->
-<div id="count">0</div>
-
-
-<!-- BUTTONS -->
-<div id="buttons">
-  <button id="plus">+</button>
-  <button id="minus">-</button>
-</div>
-
-<div id="buttonContainer">
-  <div id="buttons">
-    
-  </div>
-</div>
-
   
-<!-- COLORS -->
-<div id="colorPicker">
-  <div class="colorDot" data-color="#4fc42b" style="background:#4fc42b"></div>
-  <div class="colorDot" data-color="#ff3939" style="background:#ff3939"></div>
-  <div class="colorDot" data-color="#1a91f3" style="background:#1a91f3"></div>
-  <div class="colorDot" data-color="#ffff00" style="background:#ffff00"></div>
-  <div class="colorDot" data-color="#8c00ff" style="background:#8c00ff"></div>
-  <div class="colorDot" data-color="#ff00ff" style="background:#ff00ff"></div>
+</div>
+
+
+<div class="counter red" data-id="2">
+  <div class="Überschrift">
+  <span class="Überschrift">Atelier</span>
+  </div><div class="flames">
+  
+<span class="flame plus" onclick="toggleFlame(2,1)">✅</span>
+  <span class="flame warning" onclick="toggleFlame(2,2)">⚠️</span>
+  <span class="flame" onclick="toggleFlame(2,3)">🔥</span>
+  
+</div>
+  <div class="value">0</div>
+  <div>
+    <button onclick="change(2,1)">+</button>
+    <button onclick="change(2,-1)">-</button>
+   </div> 
+</div>
+  
+
+<div class="counter blue" data-id="3">
+  <div class="Überschrift">
+  <span class="Überschrift">Strand</span>
+  </div><div class="flames">
+  
+<span class="flame plus" onclick="toggleFlame(3,1)">✅</span>
+  <span class="flame warning" onclick="toggleFlame(3,2)">⚠️</span>
+  <span class="flame" onclick="toggleFlame(3,3)">🔥</span>
+</div>
+  <div class="value">0</div>
+  <div>
+    <button onclick="change(3,1)">+</button>
+    <button onclick="change(3,-1)">-</button>
+   </div> 
+     </div>
+
+
+<div class="counter yellow" data-id="4">
+  <div class="Überschrift">
+  <span class="Überschrift">Labor</span>
+  </div><div class="flames">
+  
+<span class="flame plus" onclick="toggleFlame(4,1)">✅</span>
+  <span class="flame warning" onclick="toggleFlame(4,2)">⚠️</span>
+  <span class="flame" onclick="toggleFlame(4,3)">🔥</span>
+</div>
+  <div class="value">0</div>
+  <div>
+    <button onclick="change(4,1)">+</button>
+    <button onclick="change(4,-1)">-</button>
+   </div> 
+  </div>
+
+<div class="counter purple" data-id="5">
+  <div class="Überschrift">
+  <span class="Überschrift">Theater</span>
+  </div><div class="flames">
+  
+<span class="flame plus" onclick="toggleFlame(5,1)">✅</span>
+  <span class="flame warning" onclick="toggleFlame(5,2)">⚠️</span>
+  <span class="flame" onclick="toggleFlame(5,3)">🔥</span>
+</div>
+  <div class="value">0</div>
+  <div>
+    <button onclick="change(5,1)">+</button>
+    <button onclick="change(5,-1)">-</button>
+  </div> 
+  </div>
+
+<div class="counter orange" data-id="6">
+  <div class="Überschrift">
+  <span class="Überschrift">Wald</span>
+  </div>
+  <div class="flames">
+  <span class="flame plus" onclick="toggleFlame(6,1)">✅</span>
+  <span class="flame warning" onclick="toggleFlame(6,2)">⚠️</span>
+  <span class="flame" onclick="toggleFlame(6,3)">🔥</span>
+</div>
+  <div class="value">0</div>
+  <div>
+    <button onclick="change(6,1)">+</button>
+    <button onclick="change(6,-1)">-</button>
+   </div> 
+  </div>
+
+  <div class="counter darkblue" data-id="7">
+  <div class="Überschrift">
+  <span class="Überschrift">Markt</span>
+  </div><div class="flames">
+  
+  <span class="flame plus" onclick="toggleFlame(7,1)">✅</span>
+  <span class="flame warning" onclick="toggleFlame(7,2)">⚠️</span>
+  <span class="flame" onclick="toggleFlame(7,3)">🔥</span>
+</div>
+  <div class="value">0</div>
+  <div>
+    <button onclick="change(7,1)">+</button>
+    <button onclick="change(7,-1)">-</button>
+  </div> 
+  </div>
+  <div class="counter greenblue" data-id="8">
+  <div class="Überschrift">
+  <span class="Überschrift">Hof</span>
+  </div><div class="flames">
+  
+  <span class="flame plus" onclick="toggleFlame(8,1)">✅</span>
+  <span class="flame warning" onclick="toggleFlame(8,2)">⚠️</span>
+  <span class="flame" onclick="toggleFlame(8,3)">🔥</span>
+</div>
+  <div class="value">0</div>
+  <div>
+    <button onclick="change(8,1)">+</button>
+    <button onclick="change(8,-1)">-</button>
+  </div> 
+  </div>
+  <div id="chat">
+  
+  <div id="messages"></div>
+
+  <div id="chatInput">
+    <input id="msgInput" placeholder="Nachricht..." />
+    <button onclick="sendMessage()">►</button>
+  </div>
+  <div id="colorPicker">
+  <span onclick="setColor('#4CAF50')" style="color:#4CAF50">●</span>
+  <span onclick="setColor('#f44336')" style="color:#f44336">●</span>
+  <span onclick="setColor('#2196F3')" style="color:#2196F3">●</span>
+  <span onclick="setColor('yellow')" style="color:yellow">●</span>
+  <span onclick="setColor('purple')" style="color:purple">●</span>
+  <span onclick="setColor('orange')" style="color:orange">●</span>
+  <span onclick="setColor('#1201fd')" style="color: #1201fd">●</span>
+  <span onclick="setColor('#00ffea')" style="color: #00ffea">●</span>
 </div>
 
 <script type="module">
-  
 import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
-
-/* ================= SUPABASE ================= */
 const supabase = createClient(
   "https://ollmmbnptcpktgtltzzz.supabase.co",
   "sb_publishable_7E3Ai7_08sGkXhwhm85USw_Ikf5taX1"
 );
 
-/* ================= STATE ================= */
-let count = 0;
-let maxValue = 10;
-let localColor = localStorage.getItem("color") || "#111";
-let lastEventTime = Date.now();
-
-let audio = document.getElementById("counterSound");
+/* =========================
+   SOUND
+========================= */
+const audio = document.getElementById("sound");
 
 let soundUnlocked = false;
+let lastEventTime = 0;
 let soundTimer = null;
-let lastSoundEvent = 0;
 
-/* ================= UNLOCK ================= */
 document.addEventListener("click", () => {
   if (soundUnlocked) return;
 
@@ -450,365 +610,330 @@ document.addEventListener("click", () => {
     .catch(() => {});
 }, { once: true });
 
-
-/* ================= SOUND TRIGGER ================= */
 function triggerSound() {
-  if (!soundUnlocked || !audio) return;
+  if (!soundUnlocked) return;
 
-  lastSoundEvent = Date.now();
+  lastEventTime = Date.now();
   clearTimeout(soundTimer);
 
   soundTimer = setTimeout(() => {
-    if (Date.now() - lastSoundEvent >= 2000) {
+    if (Date.now() - lastEventTime >= 2000) {
       audio.currentTime = 0;
       audio.play().catch(() => {});
     }
   }, 2000);
 }
 
-/* ================= COLOR BAR ================= */
-const topBar = document.getElementById("topBar");
+/* =========================
+   ALARM
+========================= */
+async function updateAlarmSound() {
 
-function applyColor(c) {
-  topBar.style.background = c;
+  const { data } = await supabase
+    .from("groupecounter")
+    .select("flame3");
+
+  const alarmActive = data.some(row =>
+  row.flame3
+  );
+
+  if (alarmActive) {
+    if (audio.paused && soundUnlocked) {
+      audio.currentTime = 0;
+      audio.play().catch(() => {});
+    }
+  } else {
+    audio.pause();
+    audio.currentTime = 0;
+  }
 }
 
-/* ================= COLOR PICKER ================= */
-const dots = document.querySelectorAll(".colorDot");
 
-function setActive(c) {
-  dots.forEach(d => d.classList.toggle("active", d.dataset.color === c));
+/* =========================
+   STATUS
+========================= */
+function setStatus(ok) {
+  document.getElementById("dot").style.background = ok ? "#4CAF50" : "gray";
+  document.getElementById("status").innerText = ok ? "verbunden" : "connecting...";
 }
 
-applyColor(localColor);
-setActive(localColor);
+/* =========================
+   SYNC TIME
+========================= */
+let lastSync = null;
 
-dots.forEach(d => {
-  d.onclick = () => {
-    localColor = d.dataset.color;
-    localStorage.setItem("color", localColor);
-    applyColor(localColor);
-    setActive(localColor);
-  };
+function formatTime(ms) {
+  const sec = Math.floor(ms / 1000);
+  const min = Math.floor(sec / 60);
+  const hour = Math.floor(min / 60);
+
+  if (sec < 60) return `sync: vor ${sec}s`;
+  if (min < 60) return `sync: vor ${min}min`;
+  return `sync: vor ${hour}h`;
+}
+
+function updateSync() {
+  if (!lastSync) return;
+  document.getElementById("syncTime").innerText =
+    formatTime(Date.now() - lastSync);
+}
+
+setInterval(updateSync, 1000);
+
+/* =========================
+   CHANGE
+========================= */
+window.change = async (id, delta) => {
+  const { data } = await supabase
+    .from("groupecounter")
+    .select("value")
+    .eq("id", id)
+    .single();
+
+  let newValue = data.value + delta;
+
+  // ❌ KEIN Minus erlauben
+  if (newValue < 0) newValue = 0;
+
+  const { error } = await supabase
+    .from("groupecounter")
+    .update({ value: newValue })
+    .eq("id", id);
+
+  if (!error) triggerSound();
+};
+
+/* =========================
+   LOAD
+========================= */
+async function loadAll() {
+
+  const { data } = await supabase
+    .from("groupecounter")
+    .select("*");
+
+  data.forEach(row => {
+    const counter = document.querySelector(`[data-id="${row.id}"]`);
+    if (!counter) return;
+
+    counter.querySelector(".value").innerText = row.value;
+
+    const flames = counter.querySelectorAll(".flame");
+
+flames[0].classList.toggle("active", row.flame1);
+flames[1].classList.toggle("active", row.flame2);
+flames[2].classList.toggle("active", row.flame3);
+
+counter.classList.toggle("burning", row.flame3);
+counter.classList.toggle("supporting", row.flame1);
+  });
+
+  await updateTotalSum();
+  lastSync = Date.now();
+  await updateAlarmSound();
+}
+loadAll();
+
+/* =========================
+   REFRESH BUTTON
+========================= */
+const refreshBtn = document.getElementById("refreshBtn");
+
+refreshBtn.addEventListener("click", async () => {
+  refreshBtn.disabled = true;
+
+  await loadAll();
+
+  setTimeout(() => {
+    refreshBtn.disabled = false;
+  }, 5000);
+});
+/* =========================
+   FLAMES
+========================= */
+window.toggleFlame = async (id, flameNumber) => {
+
+  const column = `flame${flameNumber}`;
+
+  const { data } = await supabase
+    .from("groupecounter")
+    .select(column)
+    .eq("id", id)
+    .single();
+
+  const newValue = !data[column];
+
+  await supabase
+    .from("groupecounter")
+    .update({ [column]: newValue })
+    .eq("id", id);
+};
+/* =========================
+   REALTIME
+========================= */
+supabase
+  .channel("multi")
+  .on(
+    "postgres_changes",
+    { event: "*", schema: "public", table: "groupecounter" },
+    (payload) => {
+      const row = payload.new;
+
+      const el = document.querySelector(`[data-id="${row.id}"] .value`);
+      if (el) el.innerText = row.value;
+      const counter = document.querySelector(`[data-id="${row.id}"]`);
+
+if (counter) {
+  const flames = counter.querySelectorAll(".flame");
+
+flames[0].classList.toggle("active", row.flame1);
+flames[1].classList.toggle("active", row.flame2);
+flames[2].classList.toggle("active", row.flame3);
+
+counter.classList.toggle("burning", row.flame3);
+counter.classList.toggle("supporting", row.flame1);
+}
+
+      lastSync = Date.now();
+      triggerSound();
+      updateTotalSum();
+    }
+  )
+  .subscribe(status => setStatus(status === "SUBSCRIBED"));
+  /* =========================
+  CHAT
+========================= */
+let userColor = localStorage.getItem("chatColor") || "#2196F3";
+
+window.setColor = function (color) {
+  userColor = color;
+  localStorage.setItem("chatColor", color);
+
+  // UI Update (Highlight)
+  document.querySelectorAll("#colorPicker span").forEach(el => {
+    el.classList.remove("active");
+  });
+
+  const active = [...document.querySelectorAll("#colorPicker span")]
+    .find(el => el.getAttribute("onclick").includes(color));
+
+  if (active) active.classList.add("active");
+};
+window.addEventListener("load", () => {
+  const saved = localStorage.getItem("chatColor");
+  if (saved) setColor(saved);
 });
 
-/* ================= LIMIT ================= */
-function checkLimit() {
-  document.body.classList.toggle("limitReached", count >= maxValue);
+// -------------------------
+// UI
+// -------------------------
+function addMessageToUI(msg) {
+  const box = document.getElementById("messages");
+
+  const div = document.createElement("div");
+  div.className = "msg";
+
+  const time = new Date(msg.created_at).toLocaleTimeString("de-DE", {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+
+  div.innerHTML = `
+    <span style="
+      font-size:10px;
+      opacity:0.4;
+      margin-right:6px;
+      white-space:nowrap;
+    ">
+      ${time}
+    </span>
+
+    <span style="
+      display:inline-block;
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:${msg.color || "#2196F3"};
+      margin-right:6px;
+      flex-shrink:0;
+    "></span>
+
+    <span style="color:white;">
+      ${msg.text}
+    </span>
+  `;
+
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
 }
-function renderGroups(id, groups = []) {
+// -------------------------
+// SEND
+// -------------------------
+window.sendMessage = async () => {
+  const input = document.getElementById("msgInput");
+  const text = input.value.trim();
 
-  const container = document.getElementById(id);
+  if (!text) return;
 
-  if (!container) {
-    console.error("Container fehlt:", id);
+  await supabase.from("chatmessages").insert({
+    text,
+    color: userColor
+  });
+
+  input.value = "";
+};
+
+// ENTER
+document.getElementById("msgInput").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") sendMessage();
+});
+
+// -------------------------
+// LOAD
+// -------------------------
+let lastMessageTime = null;
+
+async function loadMessages() {
+  const { data } = await supabase
+    .from("chatmessages")
+    .select("*")
+    .order("created_at", { ascending: true });
+
+  const box = document.getElementById("messages");
+  box.innerHTML = "";
+
+  data.forEach(addMessageToUI);
+
+  if (data.length > 0) {
+    lastMessageTime = data[data.length - 1].created_at;
+  }
+}
+
+// -------------------------
+// POLL (LIVE WITHOUT REPLICATION)
+// -------------------------
+async function pollMessages() {
+  if (!lastMessageTime) {
+    await loadMessages();
     return;
   }
 
-  container.innerHTML = "";
-
-  if (!Array.isArray(groups)) return;
-
-  groups.forEach(color => {
-
-    const bubble = document.createElement("div");
-
-    bubble.className = "statusBubble";
-
-    bubble.style.background = color;
-
-    container.appendChild(bubble);
-  });
-}
-
-/* ================= LOG ================= */
-function addLog(delta, color) {
-  const log = document.getElementById("log");
-
-  const row = document.createElement("div");
-  row.className = "logEntry";
-  
-
-  const bubble = document.createElement("div");
-  bubble.className = "colorBubble";
-
-  // ✅ Bubble bleibt wie vorher (z.B. vom ColorPicker)
-  bubble.style.background = color || "#fff";
-
-  const text = document.createElement("span");
-
-  // ⬇️ Zeit speichern
-  const timestamp = Date.now();
-  text.dataset.time = timestamp;
-
-  // ✅ Textfarbe je nach Wert
-  text.style.color = delta > 0 ? "#4caf50" : "#f44336";
-
-  text.textContent = `${delta > 0 ? "+" : ""}${delta} (0s)`;
-
-  row.appendChild(bubble);
-  row.appendChild(text);
-
-  log.prepend(row);
-
-  if (log.children.length > 10) {
-    log.removeChild(log.lastChild);
-  }
-}
-// ⬇️ live update (Sekunden → ab 60 Minuten)
-setInterval(() => {
-  const entries = document.querySelectorAll("#log span");
-
-  entries.forEach(el => {
-    const time = parseInt(el.dataset.time);
-    let diff = Math.floor((Date.now() - time) / 1000);
-
-    const value = el.textContent.split(" ")[0];
-
-    if (diff < 60) {
-      el.textContent = `${value} (${diff}s)`;
-    } else {
-      const min = Math.floor(diff / 60);
-      el.textContent = `${value} (${min}min)`;
-    }
-  });
-
-}, 1000);
-
-
-/* ================= SYNC ================= */
-function setSync(state) {
-  const dot = document.getElementById("dot");
-  const text = document.getElementById("syncText");
-
-  if (state === "online") {
-    dot.style.background = "#4CAF50";
-    text.textContent = "online";
-  } else if (state === "offline") {
-    dot.style.background = "#f44336";
-    text.textContent = "offline";
-  } else {
-    dot.style.background = "gray";
-    text.textContent = "Verbinde...";
-  }
-}
-
-/* ================= LOAD ================= */
-async function load() {
   const { data } = await supabase
-    .from("counter")
+    .from("chatmessages")
     .select("*")
-    .eq("id", 1)
-    .single();
+    .gt("created_at", lastMessageTime)
+    .order("created_at", { ascending: true });
 
-  count = data.value;
-  maxValue = data.max_value ?? 10;
-
-renderGroups("readyGroups", data.ready_groups || []);
-renderGroups("paymentGroups", data.payment_groups || []);
-renderGroups("freeGroups", data.free_groups || []);
-
-  document.getElementById("count").innerText = count;
-  document.getElementById("maxValue").innerText = maxValue;
-
-  checkLimit();
-
-isOpen = data.is_open ?? false;
-updateOpenUI();
-}
-
-/* ================= UPDATE ================= */
-
-async function update(delta) {
-
-  const { data } = await supabase
-    .from("counter")
-    .select("value")
-    .eq("id", 1)
-    .single();
-
- let newValue = data.value + delta;
-
-if (newValue < 0) newValue = 0;
-
-await supabase
-  .from("counter")
-  .update({
-    value: newValue,
-    last_delta: delta,
-    last_color: localColor
-  })
-  .eq("id", 1);
-}
-
-/* ================= Statusbutton ================= */
-
-async function toggleGroup(column) {
-
-  const { data } = await supabase
-    .from("counter")
-    .select(column)
-    .eq("id", 1)
-    .single();
-
-  let groups = data[column] || [];
-
-  if (groups.includes(localColor)) {
-
-    groups = groups.filter(c => c !== localColor);
-
-  } else {
-
-    groups.push(localColor);
-  }
-
-  await supabase
-    .from("counter")
-    .update({
-      [column]: groups
-    })
-    .eq("id", 1);
-}
-/* ================= MAX (FIXED) ================= */
-async function updateMax(delta) {
-
-  const { data } = await supabase
-    .from("counter")
-    .select("max_value")
-    .eq("id", 1)
-    .single();
-
-  let newMax = (data.max_value ?? 10) + delta;
-  if (newMax < 0) newMax = 0;
-
-  await supabase
-    .from("counter")
-    .update({ max_value: newMax })
-    .eq("id", 1);
-
-  maxValue = newMax;
-  document.getElementById("maxValue").innerText = maxValue;
-
-  checkLimit();  
-}
-
-/* ================= BUTTONS ================= */
-document.getElementById("plus").onclick = () => update(1);
-document.getElementById("minus").onclick = () => update(-1);
-
-document.getElementById("maxPlus").onclick = () => updateMax(1);
-document.getElementById("maxMinus").onclick = () => updateMax(-1);
-
-document.getElementById("readyBtn").onclick =
-  () => toggleGroup("ready_groups");
-
-document.getElementById("paymentBtn").onclick =
-  () => toggleGroup("payment_groups");
-
-document.getElementById("freeBtn").onclick =
-  () => toggleGroup("free_groups");
-
-let isOpen = false;
-
-function updateOpenUI() {
-  document.body.classList.toggle("closed", !isOpen);
-  document.getElementById("openBtn").innerText = isOpen ? "OFFEN" : "GESCHLOSSEN";
-}
-document.getElementById("openBtn").onclick = async () => {
-  await supabase
-    .from("counter")
-    .update({ is_open: !isOpen })
-    .eq("id", 1);
-};
-/* ================= REALTIME ================= */
-supabase.channel("counter-live")
-  .on("postgres_changes", { event: "*", schema: "public", table: "counter" }, payload => {
-
-    lastEventTime = Date.now();
-    setSync("online");
-
-    const d = payload.new;
-
-    renderGroups("readyGroups", d.ready_groups || []);
-renderGroups("paymentGroups", d.payment_groups || []);
-renderGroups("freeGroups", d.free_groups || []);
-    
-isOpen = d.is_open ?? false;
-updateOpenUI();
-
-/* ALTEN WERT MERKEN */
-const oldCount = count;
-
-/* UI */
-document.getElementById("count").innerText = d.value;
-document.getElementById("maxValue").innerText = d.max_value ?? 10;
-
-/* LOG NUR WENN SICH COUNT ÄNDERT */
-if (oldCount !== d.value) {
-
-  if (d.last_delta !== null && d.last_delta !== 0) {
-    addLog(d.last_delta, d.last_color);
+  if (data && data.length > 0) {
+    data.forEach(addMessageToUI);
+    lastMessageTime = data[data.length - 1].created_at;
   }
 }
 
-/* NEUE WERTE SPEICHERN */
-count = d.value;
-maxValue = d.max_value ?? 10;
+// START
+loadMessages();
+setInterval(pollMessages, 1500);
 
-checkLimit();
-
-triggerSound();
-  })
-  .subscribe((status) => {
-
-    if (status === "SUBSCRIBED") setSync("online");
-    else if (status === "CLOSED" || status === "TIMED_OUT") setSync("offline");
-    else setSync("connecting");
-  });
-document.getElementById("refreshBtn").onclick = async () => {
-  setSync("connecting"); // optional visuelles Feedback
-
-  await load(); // lädt Counter + Max neu aus Supabase
-
-  lastEventTime = Date.now();
-
-  setSync("online");
-
-  // Button kurz deaktivieren (optional, aber sinnvoll)
- const btn = document.getElementById("refreshBtn");
-
-  btn.disabled = true;
-  setTimeout(() => {
-    btn.disabled = false;
-  }, 5000);
-};
-function updateLastUpdateDisplay() {
-  const el = document.getElementById("lastUpdate");
-
-  const diff = Math.floor((Date.now() - lastEventTime) / 1000);
-
-  if (diff < 5) {
-    el.innerText = "letztes update: gerade eben";
-  } else if (diff < 60) {
-    el.innerText = `letztes update: vor ${diff} sek`;
-  } else {
-    const min = Math.floor(diff / 60);
-    el.innerText = `letztes update: vor ${min} min`;
-  }
-}
-setInterval(updateLastUpdateDisplay, 1000);
-
-updateOpenUI();
-/* ================= HEARTBEAT ================= */
-setInterval(() => {
-  if (Date.now() - lastEventTime > 8000) {
-    setSync("offline");
-  }
-}, 2000);
-
-
-load();
-applyColor(localColor);
 </script>
 
 </body>
