@@ -418,8 +418,8 @@ font-size: 2vh;
 
 <body>
 
-<audio id="sound" src="click.mp3" preload="auto"></audio>
-<audio id="sound" src="Alarm.mp3" preload="auto"></audio>
+<audio id="clickSound" src="click.mp3" preload="auto"></audio>
+<audio id="alarmSound" src="Alarm.mp3" preload="auto" loop></audio>
 
 <div id="topbar">
   <button id="refreshBtn">↻</button>
@@ -593,24 +593,39 @@ const supabase = createClient(
    SOUND
 ========================= */
 const audio = document.getElementById("sound");
+const clickAudio = document.getElementById("clickSound");
+const alarmAudio = document.getElementById("alarmSound");
+const flame1Audio = new Audio("flame1.mp3");
+const flame2Audio = new Audio("flame2.mp3");
+
+let lastFlame1 = false;
+let lastFlame2 = false;
 
 let soundUnlocked = false;
 let lastEventTime = 0;
 let soundTimer = null;
+document.addEventListener("click", async () => {
 
-document.addEventListener("click", () => {
-  if (soundUnlocked) return;
+    if (soundUnlocked) return;
 
-  audio.play()
-    .then(() => {
-      audio.pause();
-      audio.currentTime = 0;
-      soundUnlocked = true;
-    })
-    .catch(() => {});
-}, { once: true });
+    try {
+        await clickAudio.play();
+        clickAudio.pause();
+        clickAudio.currentTime = 0;
+
+        await alarmAudio.play();
+        alarmAudio.pause();
+        alarmAudio.currentTime = 0;
+
+        soundUnlocked = true;
+        await updateAlarmSound();
+    } catch(e) {}
+
+}, { once:true });
 
 function triggerSound() {
+  console.trace("triggerSound");
+
   if (!soundUnlocked) return;
 
   lastEventTime = Date.now();
@@ -618,33 +633,37 @@ function triggerSound() {
 
   soundTimer = setTimeout(() => {
     if (Date.now() - lastEventTime >= 2000) {
-      audio.currentTime = 0;
-      audio.play().catch(() => {});
+      clickAudio.currentTime = 0;
+      clickAudio.play().catch(() => {});
     }
   }, 2000);
 }
 
+
 /* =========================
    ALARM
 ========================= */
-async function updateAlarmSound() {
+let alarmPlaying = false;
 
+async function updateAlarmSound() {
   const { data } = await supabase
     .from("groupecounter")
     .select("flame3");
 
-  const alarmActive = data.some(row =>
-  row.flame3
-  );
+  const alarmActive = data?.some(row => row.flame3);
 
-  if (alarmActive) {
-    if (audio.paused && soundUnlocked) {
-      audio.currentTime = 0;
-      audio.play().catch(() => {});
-    }
-  } else {
-    audio.pause();
-    audio.currentTime = 0;
+  if (!soundUnlocked) return;
+
+  if (alarmActive && !alarmPlaying) {
+    alarmPlaying = true;
+    alarmAudio.currentTime = 0;
+    alarmAudio.play().catch(err => console.log("ALARM ERROR:", err));
+  }
+
+  if (!alarmActive && alarmPlaying) {
+    alarmPlaying = false;
+    alarmAudio.pause();
+    alarmAudio.currentTime = 0;
   }
 }
 
@@ -700,9 +719,20 @@ window.change = async (id, delta) => {
     .update({ value: newValue })
     .eq("id", id);
 
-  if (!error) triggerSound();
 };
+/* =========================
+   GESAMTSUMME
+========================= */
+async function updateTotalSum() {
 
+  let sum = 0;
+
+  document.querySelectorAll(".counter .value").forEach(el => {
+    sum += Number(el.innerText) || 0;
+  });
+
+  document.getElementById("totalSum").innerText = `Gesamt: ${sum}`;
+}
 /* =========================
    LOAD
 ========================= */
@@ -728,26 +758,31 @@ counter.classList.toggle("burning", row.flame3);
 counter.classList.toggle("supporting", row.flame1);
   });
 
-  await updateTotalSum();
-  lastSync = Date.now();
-  await updateAlarmSound();
+ await updateTotalSum();
+lastSync = Date.now();
+await updateAlarmSound();
+await updateWarningSounds();
 }
 loadAll();
+
 
 /* =========================
    REFRESH BUTTON
 ========================= */
-const refreshBtn = document.getElementById("refreshBtn");
-
 refreshBtn.addEventListener("click", async () => {
   refreshBtn.disabled = true;
 
-  await loadAll();
-
-  setTimeout(() => {
-    refreshBtn.disabled = false;
-  }, 5000);
+  try {
+    await loadAll();
+  } catch (err) {
+    console.error("Refresh-Fehler:", err);
+  } finally {
+    setTimeout(() => {
+      refreshBtn.disabled = false;
+    }, 5000);
+  }
 });
+
 /* =========================
    FLAMES
 ========================= */
@@ -776,11 +811,22 @@ supabase
   .on(
     "postgres_changes",
     { event: "*", schema: "public", table: "groupecounter" },
+    
     (payload) => {
       const row = payload.new;
 
-      const el = document.querySelector(`[data-id="${row.id}"] .value`);
-      if (el) el.innerText = row.value;
+ const el = document.querySelector(`[data-id="${row.id}"] .value`);
+
+if (el) {
+
+  // Nur Ton, wenn sich der angezeigte Wert wirklich ändert
+  if (Number(el.innerText) !== row.value) {
+    triggerSound();
+  }
+
+  el.innerText = row.value;
+}
+
       const counter = document.querySelector(`[data-id="${row.id}"]`);
 
 if (counter) {
@@ -795,8 +841,10 @@ counter.classList.toggle("supporting", row.flame1);
 }
 
       lastSync = Date.now();
-      triggerSound();
-      updateTotalSum();
+
+updateTotalSum();
+updateAlarmSound();
+updateWarningSounds();
     }
   )
   .subscribe(status => setStatus(status === "SUBSCRIBED"));
